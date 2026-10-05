@@ -1,0 +1,7 @@
+{% extends "usuarios/_auth_layout.html" %}
+{% block titulo %}Revise su correo{% endblock %}
+{% block formulario %}
+<h1 class="h3 mb-3"><i class="bi bi-envelope-check text-success" aria-hidden="true"></i> Revise su correo</h1>
+<p>Si el correo indicado corresponde a una cuenta activa, le enviamos un enlace para restablecer la contraseña. El enlace vence en 1 hora y solo puede usarse una vez.</p>
+<a class="btn btn-outline-primary" href="{% url 'usuarios:login' %}">Volver al inicio de sesión</a>
+{% endblock %}

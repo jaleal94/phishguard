@@ -1,0 +1,39 @@
+{% extends base_plantilla %}
+{% block titulo %}Mi panel{% endblock %}
+{% block contenido %}
+<div class="mb-4">
+  <h1 class="h3 mb-0">Hola, {{ user.get_short_name }}</h1>
+  <p class="text-muted mb-0">Este es su espacio de capacitación en seguridad del correo.</p>
+</div>
+
+<div class="alert pg-alerta-reportar d-flex flex-wrap align-items-center justify-content-between gap-2" role="note">
+  <span><i class="bi bi-flag-fill me-1" aria-hidden="true"></i> ¿Recibió un correo sospechoso? No lo abra ni descargue adjuntos: repórtelo.</span>
+  <a class="btn btn-sm btn-light" href="{% url 'reportes:reportar' %}">Reportar correo</a>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card pg-card h-100">
+      <div class="card-body">
+        <h2 class="h5"><i class="bi bi-mortarboard" aria-hidden="true"></i> Mis cursos asignados</h2>
+        <p class="text-muted mb-0">No tiene cursos asignados por ahora.</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card pg-card mb-4">
+      <div class="card-body">
+        <h2 class="h5"><i class="bi bi-award" aria-hidden="true"></i> Mis certificados</h2>
+        <p class="text-muted small">Descargue el certificado de los cursos aprobados.</p>
+        <button class="btn btn-outline-secondary btn-sm" type="button" disabled>Descargar certificado <span class="badge text-bg-info">Próximamente</span></button>
+      </div>
+    </div>
+    <div class="card pg-card">
+      <div class="card-body">
+        <h2 class="h5"><i class="bi bi-inbox" aria-hidden="true"></i> Mis reportes</h2>
+        <p class="text-muted mb-0">Aún no ha reportado correos sospechosos.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

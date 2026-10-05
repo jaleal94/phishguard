@@ -1,0 +1,7 @@
+{% extends "usuarios/_auth_layout.html" %}
+{% block titulo %}Contraseña actualizada{% endblock %}
+{% block formulario %}
+<h1 class="h3 mb-3"><i class="bi bi-check-circle text-success" aria-hidden="true"></i> Contraseña actualizada</h1>
+<p>Ya puede iniciar sesión con su nueva contraseña.</p>
+<a class="btn btn-primary" href="{% url 'usuarios:login' %}">Iniciar sesión</a>
+{% endblock %}

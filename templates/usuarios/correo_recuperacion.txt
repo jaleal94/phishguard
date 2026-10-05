@@ -1,0 +1,11 @@
+{% autoescape off %}Hola, {{ user.nombre_completo }}:
+
+Recibimos una solicitud para restablecer su contraseña de PhishGuard.
+Abra el siguiente enlace para crear una nueva (vence en 1 hora y solo puede usarse una vez):
+
+{{ protocol }}://{{ domain }}{% url 'usuarios:recuperar_confirmar' uidb64=uid token=token %}
+
+Si usted no hizo esta solicitud, ignore este mensaje y avise al Departamento de Soporte Técnico y Sistemas.
+
+PhishGuard · CUREX, C.A.
+{% endautoescape %}

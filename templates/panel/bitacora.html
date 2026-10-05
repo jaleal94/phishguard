@@ -1,0 +1,45 @@
+{% extends "base_admin.html" %}
+{% block titulo %}Bitácora{% endblock %}
+{% block clase_main %}container-fluid py-4 px-lg-4{% endblock %}
+{% block contenido %}
+<h1 class="h3 mb-3">Bitácora de acciones</h1>
+<form method="get" class="card pg-card card-body mb-3" aria-label="Filtrar bitácora">
+  <div class="row g-2 align-items-end">
+    <div class="col-md-4">
+      <label class="form-label" for="f-accion">Acción</label>
+      <select class="form-select" id="f-accion" name="accion">
+        <option value="">Todas</option>
+        {% for a in acciones %}<option value="{{ a }}" {% if filtros.accion == a %}selected{% endif %}>{{ a }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-md-5">
+      <label class="form-label" for="f-usuario">Usuario</label>
+      <input class="form-control" id="f-usuario" type="search" name="usuario" value="{{ filtros.usuario }}" placeholder="Correo del usuario">
+    </div>
+    <div class="col-md-3 d-grid"><button class="btn btn-outline-primary" type="submit"><i class="bi bi-funnel" aria-hidden="true"></i> Filtrar</button></div>
+  </div>
+</form>
+<div class="card pg-card">
+  <div class="table-responsive">
+    <table class="table table-sm table-hover align-middle mb-0">
+      <caption class="visually-hidden">Registros de la bitácora</caption>
+      <thead class="table-light"><tr><th scope="col">Fecha</th><th scope="col">Usuario</th><th scope="col">Acción</th><th scope="col">Objeto</th><th scope="col">Detalle</th><th scope="col">IP</th></tr></thead>
+      <tbody>
+      {% for r in pagina %}
+        <tr>
+          <td class="text-nowrap">{{ r.ocurrido_en|date:"d/m/Y H:i:s" }}</td>
+          <td class="text-break">{{ r.usuario.email|default:"sistema" }}</td>
+          <td><span class="badge text-bg-light border">{{ r.accion }}</span></td>
+          <td class="text-break">{{ r.objeto }}</td>
+          <td class="small text-break">{% for k, v in r.detalle.items %}<div><strong>{{ k }}:</strong> {{ v }}</div>{% endfor %}</td>
+          <td class="small">{{ r.ip|default:"—" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6" class="text-center text-muted py-4">No hay registros.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% include "comun/paginacion.html" %}
+{% endblock %}

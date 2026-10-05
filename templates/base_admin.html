@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block navegacion %}
+{% with ns=request.resolver_match.namespace nombre=request.resolver_match.url_name %}
+<nav class="navbar navbar-expand-lg navbar-dark pg-navbar" aria-label="Menú del Administrador">
+  <div class="container-fluid">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'panel:admin_panel' %}">
+      <i class="bi bi-shield-check" aria-hidden="true"></i> PhishGuard
+      <span class="badge pg-badge-rol">Administrador</span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuAdmin" aria-controls="menuAdmin" aria-expanded="false" aria-label="Mostrar menú">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="menuAdmin">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link {% if nombre == 'admin_panel' %}active{% endif %}" {% if nombre == 'admin_panel' %}aria-current="page"{% endif %} href="{% url 'panel:admin_panel' %}"><i class="bi bi-speedometer2" aria-hidden="true"></i> Indicadores</a></li>
+        <li class="nav-item"><a class="nav-link {% if nombre == 'usuarios_lista' or nombre == 'usuario_crear' or nombre == 'usuario_editar' or nombre == 'usuarios_importar' %}active{% endif %}" href="{% url 'usuarios:usuarios_lista' %}"><i class="bi bi-people" aria-hidden="true"></i> Usuarios</a></li>
+        <li class="nav-item"><a class="nav-link {% if 'departamento' in nombre %}active{% endif %}" href="{% url 'usuarios:departamentos_lista' %}"><i class="bi bi-diagram-3" aria-hidden="true"></i> Departamentos</a></li>
+        <li class="nav-item"><a class="nav-link {% if ns == 'capacitacion' %}active{% endif %}" href="{% url 'capacitacion:cursos_admin' %}"><i class="bi bi-mortarboard" aria-hidden="true"></i> Cursos</a></li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {% if ns == 'simulaciones' %}active{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-envelope-exclamation" aria-hidden="true"></i> Simulaciones</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'simulaciones:plantillas' %}">Plantillas</a></li>
+            <li><a class="dropdown-item" href="{% url 'simulaciones:campanas' %}">Campañas</a></li>
+          </ul>
+        </li>
+        <li class="nav-item"><a class="nav-link {% if nombre == 'bandeja' %}active{% endif %}" href="{% url 'reportes:bandeja' %}"><i class="bi bi-inbox" aria-hidden="true"></i> Reportes</a></li>
+        <li class="nav-item"><a class="nav-link {% if nombre == 'bitacora' %}active{% endif %}" href="{% url 'panel:bitacora' %}"><i class="bi bi-journal-text" aria-hidden="true"></i> Bitácora</a></li>
+      </ul>
+      {% include "comun/menu_usuario.html" %}
+    </div>
+  </div>
+</nav>
+{% endwith %}
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends base_plantilla %}
+{% block titulo %}Mi perfil{% endblock %}
+{% block contenido %}
+<h1 class="h3 mb-4">Mi perfil</h1>
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card pg-card h-100">
+      <div class="card-body">
+        <h2 class="h5 card-title"><i class="bi bi-person-vcard" aria-hidden="true"></i> Datos personales</h2>
+        <dl class="row small mb-3">
+          <dt class="col-sm-4">Correo</dt><dd class="col-sm-8">{{ user.email }}</dd>
+          <dt class="col-sm-4">Rol</dt><dd class="col-sm-8">{{ user.get_rol_display }}</dd>
+          <dt class="col-sm-4">Departamento</dt><dd class="col-sm-8">{{ user.departamento|default:"Sin asignar" }}</dd>
+        </dl>
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <input type="hidden" name="accion" value="perfil">
+          {% include "comun/errores_form.html" with form=form_perfil %}
+          {% include "comun/campo.html" with campo=form_perfil.nombre_completo %}
+          <button type="submit" class="btn btn-primary">Guardar datos</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card pg-card h-100">
+      <div class="card-body">
+        <h2 class="h5 card-title"><i class="bi bi-key" aria-hidden="true"></i> Cambiar contraseña</h2>
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <input type="hidden" name="accion" value="clave">
+          {% include "comun/errores_form.html" with form=form_clave %}
+          {% include "comun/campo.html" with campo=form_clave.old_password %}
+          {% include "comun/campo.html" with campo=form_clave.new_password1 %}
+          {% include "comun/campo.html" with campo=form_clave.new_password2 %}
+          <button type="submit" class="btn btn-primary">Cambiar contraseña</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

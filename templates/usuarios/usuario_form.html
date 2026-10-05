@@ -1,0 +1,33 @@
+{% extends "base_admin.html" %}
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block contenido %}
+<nav aria-label="Ruta de navegación"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{% url 'usuarios:usuarios_lista' %}">Usuarios</a></li><li class="breadcrumb-item active" aria-current="page">{{ titulo }}</li></ol></nav>
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card pg-card">
+      <div class="card-body p-4">
+        <h1 class="h4 mb-4">{{ titulo }}</h1>
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% include "comun/errores_form.html" %}
+          <div class="row">
+            <div class="col-md-6">{% include "comun/campo.html" with campo=form.email %}</div>
+            <div class="col-md-6">{% include "comun/campo.html" with campo=form.nombre_completo %}</div>
+            <div class="col-md-6">{% include "comun/campo.html" with campo=form.rol %}</div>
+            <div class="col-md-6">{% include "comun/campo.html" with campo=form.departamento %}</div>
+            {% if form.password1 %}
+            <div class="col-md-6">{% include "comun/campo.html" with campo=form.password1 %}</div>
+            <div class="col-md-6">{% include "comun/campo.html" with campo=form.password2 %}</div>
+            {% endif %}
+            <div class="col-12">{% include "comun/campo.html" with campo=form.is_active %}</div>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <a href="{% url 'usuarios:usuarios_lista' %}" class="btn btn-outline-secondary">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
