@@ -4,6 +4,8 @@ Plataforma web de concientización contra phishing para CUREX, C.A.: cursos con 
 
 **Stack:** Python 3.12 · Django 5.2 · PostgreSQL (Supabase) · Bootstrap 5 · Vercel.
 
+**Producción:** https://phishguard-omega-nine.vercel.app · **Repositorio:** https://github.com/jaleal94/phishguard
+
 ## Instalación local
 
 ```bash
@@ -32,6 +34,9 @@ Abra http://localhost:8000/ e inicie sesión con:
 | Administrador | admin.demo@curex.net.ve | PhishGuard.Demo2026 |
 | Colaborador | colaborador.demo@curex.net.ve | PhishGuard.Demo2026 |
 
+Las credenciales anteriores son solo para el entorno local. En producción las cuentas demo usan
+otra contraseña, que se entrega por separado.
+
 En desarrollo los correos (por ejemplo, la recuperación de contraseña) se imprimen en la consola.
 
 ## Pruebas y calidad
@@ -52,6 +57,10 @@ python manage.py check --deploy   # con DJANGO_DEBUG=False
 4. Importar el repositorio de GitHub en Vercel y configurar las variables de `.env.example` en
    *Project Settings → Environment Variables* (`DJANGO_DEBUG=False`).
 5. Cada push a `main` despliega automáticamente.
+6. **Seguridad de Supabase:** active RLS (Row Level Security) en todas las tablas del esquema
+   `public` para que la API REST pública de Supabase no exponga datos. Django no se ve afectado
+   porque se conecta como dueño de las tablas. Repítalo cada vez que una migración cree tablas nuevas:
+   `ALTER TABLE public.<tabla> ENABLE ROW LEVEL SECURITY;`
 
 ## Estructura
 
