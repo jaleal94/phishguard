@@ -10,3 +10,5 @@ capturas_anexo_a/
 staticfiles/
 */tests/
 .env.*
+entrega/
+docs/

@@ -13,3 +13,4 @@ staticfiles/*
 capturas_anexo_a/
 .env.*
 !.env.example
+entrega/
