@@ -45,11 +45,13 @@ python manage.py check --deploy   # con DJANGO_DEBUG=False
 ## Despliegue en Vercel
 
 1. Crear el proyecto en Supabase y copiar la cadena del **pooler** (puerto 6543) en `DATABASE_URL`.
-2. Ejecutar las migraciones contra Supabase desde su equipo (nunca en cada petición):
+2. En Supabase Storage crear dos buckets: `phishguard` (**privado**, adjuntos de reportes) y
+   `phishguard-publico` (**público**, imágenes de lecciones).
+3. Ejecutar las migraciones contra Supabase desde su equipo (nunca en cada petición):
    `DATABASE_URL=... python manage.py migrate` y luego `python manage.py seed_demo`.
-3. Importar el repositorio de GitHub en Vercel y configurar las variables de `.env.example` en
+4. Importar el repositorio de GitHub en Vercel y configurar las variables de `.env.example` en
    *Project Settings → Environment Variables* (`DJANGO_DEBUG=False`).
-4. Cada push a `main` despliega automáticamente.
+5. Cada push a `main` despliega automáticamente.
 
 ## Estructura
 

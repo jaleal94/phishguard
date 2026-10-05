@@ -1,0 +1,65 @@
+{% extends "base_admin.html" %}
+{% load reportes_extras %}
+{% block titulo %}Bandeja de reportes{% endblock %}
+{% block clase_main %}container-fluid py-4 px-lg-4{% endblock %}
+{% block contenido %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">Bandeja de reportes</h1>
+  <button class="btn btn-outline-secondary" type="button" disabled><i class="bi bi-filetype-csv" aria-hidden="true"></i> Exportar <span class="badge text-bg-info">Próximamente</span></button>
+</div>
+
+<div class="row g-2 mb-3">
+  {% for r in resumen %}
+  <div class="col-6 col-lg-3">
+    <a href="?estado={{ r.valor }}" class="card pg-card text-decoration-none h-100 {% if filtros.estado == r.valor %}border-primary border-2{% endif %}">
+      <div class="card-body py-2">
+        <div class="small text-muted">{{ r.etiqueta }}</div>
+        <div class="fs-4 fw-bold"><span class="badge {{ r.valor|clase_estado_reporte }}">{{ r.total }}</span></div>
+      </div>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+
+<form method="get" class="card pg-card card-body mb-3" role="search" aria-label="Buscar reportes">
+  <div class="row g-2 align-items-end">
+    <div class="col-md-6">
+      <label class="form-label" for="f-q">Buscar</label>
+      <input class="form-control" id="f-q" type="search" name="q" value="{{ filtros.q }}" placeholder="Asunto, remitente o correo de quien reporta">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label" for="f-estado">Estado</label>
+      <select class="form-select" id="f-estado" name="estado">
+        <option value="">Todos</option>
+        {% for r in resumen %}<option value="{{ r.valor }}" {% if filtros.estado == r.valor %}selected{% endif %}>{{ r.etiqueta }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3 d-grid"><button class="btn btn-outline-primary" type="submit"><i class="bi bi-funnel" aria-hidden="true"></i> Filtrar</button></div>
+  </div>
+</form>
+
+<div class="card pg-card">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <caption class="visually-hidden">Reportes de correos sospechosos</caption>
+      <thead class="table-light"><tr><th scope="col">#</th><th scope="col">Asunto</th><th scope="col">Remitente</th><th scope="col">Reportado por</th><th scope="col">Fecha</th><th scope="col">Estado</th><th scope="col"></th></tr></thead>
+      <tbody>
+      {% for r in pagina %}
+        <tr>
+          <td>{{ r.pk }}</td>
+          <td>{{ r.asunto }}{% if r.es_simulacion %} <span class="badge text-bg-light border" title="Corresponde a la campaña {{ r.destinatario_sim.campana.nombre }}">Simulación</span>{% endif %}{% if r.adjunto_url %} <i class="bi bi-paperclip" aria-label="Con adjunto"></i>{% endif %}</td>
+          <td class="text-break small">{{ r.remitente }}</td>
+          <td class="small">{{ r.reportado_por.nombre_completo }}<div class="text-muted">{{ r.reportado_por.departamento|default:"" }}</div></td>
+          <td class="small text-nowrap">{{ r.creado_en|date:"d/m/Y H:i" }}</td>
+          <td><span class="badge {{ r.estado|clase_estado_reporte }}">{{ r.get_estado_display }}</span></td>
+          <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'reportes:atender' r.pk %}">Atender</a></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="7" class="text-center text-muted py-4">No hay reportes que coincidan.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% include "comun/paginacion.html" %}
+{% endblock %}

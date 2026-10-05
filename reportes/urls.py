@@ -1,27 +1,19 @@
-"""Rutas de la app reportes (provisionales hasta la Línea C)."""
+"""Rutas de la app reportes."""
 
 from django.urls import path
 
-from panel.views import en_construccion
+from . import views
 
 app_name = "reportes"
 
 urlpatterns = [
+    path("reportar/", views.reportar, name="reportar"),
+    path("reportes/<int:pk>/", views.detalle, name="detalle"),
+    path("admin-panel/reportes/", views.bandeja, name="bandeja"),
+    path("admin-panel/reportes/<int:pk>/", views.atender, name="atender"),
     path(
-        "reportar/",
-        en_construccion(
-            "Reportar correo sospechoso",
-            "Formulario para reportar correos sospechosos con adjunto (RF-22).",
-        ),
-        name="reportar",
-    ),
-    path(
-        "admin-panel/reportes/",
-        en_construccion(
-            "Bandeja de reportes",
-            "Atención de reportes de correos sospechosos (RF-23 a RF-25).",
-            solo_admin=True,
-        ),
-        name="bandeja",
+        "admin-panel/reportes/<int:pk>/adjunto/",
+        views.descargar_adjunto,
+        name="descargar_adjunto",
     ),
 ]

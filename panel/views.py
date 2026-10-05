@@ -6,6 +6,7 @@ from django.db.models import Count
 from django.shortcuts import render
 
 from capacitacion.models import Asignacion, Curso, Intento
+from reportes.models import ReporteSospechoso
 from usuarios.decoradores import admin_requerido
 from usuarios.models import Departamento, Usuario
 
@@ -47,8 +48,11 @@ def mi_panel(request):
         a.avance = round(a.n_progresos * 100 / a.n_lecciones) if a.n_lecciones else 0
         a.ultimo_intento = notas.get(a.curso_id)
     aprobadas = [a for a in asignaciones if a.completada]
+    reportes = ReporteSospechoso.objects.filter(reportado_por=request.user)[:5]
     return render(
-        request, "panel/mi_panel.html", {"asignaciones": asignaciones, "aprobadas": aprobadas}
+        request,
+        "panel/mi_panel.html",
+        {"asignaciones": asignaciones, "aprobadas": aprobadas, "reportes": reportes},
     )
 
 

@@ -4,6 +4,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from capacitacion import demo as demo_capacitacion
+from reportes import demo as demo_reportes
 from usuarios.models import Departamento, Usuario
 
 DEPARTAMENTOS = [
@@ -72,9 +73,11 @@ class Command(BaseCommand):
             admin, Usuario.objects.filter(rol=Usuario.Rol.COLABORADOR)
         )
 
+        reportes = demo_reportes.cargar(admin)
+
         mensaje = (
-            f"Datos de demostración listos ({creados} usuarios y "
-            f"{asignaciones} asignaciones nuevas)."
+            f"Datos de demostración listos ({creados} usuarios, {asignaciones} asignaciones "
+            f"y {reportes} reportes nuevos)."
         )
         self.stdout.write(self.style.SUCCESS(mensaje))
         self.stdout.write("Credenciales de prueba:")

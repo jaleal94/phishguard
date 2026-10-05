@@ -146,3 +146,4 @@ class SeedDemoTests(TestCase):
         self.assertFalse(colaborador.es_admin)
         self.assertEqual(Usuario.objects.count(), 12)
         self.assertEqual(colaborador.asignaciones.count(), 1)
+        self.assertEqual(colaborador.reportes.count(), 1)

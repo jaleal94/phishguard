@@ -1,0 +1,48 @@
+{% extends base_plantilla %}
+{% load reportes_extras %}
+{% block titulo %}Reportar correo sospechoso{% endblock %}
+{% block contenido %}
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card pg-card"><div class="card-body p-4">
+      <h1 class="h3 mb-1"><i class="bi bi-flag-fill text-danger" aria-hidden="true"></i> Reportar correo sospechoso</h1>
+      <p class="text-muted">Complete los datos tal como aparecen en el correo. No reenvíe el mensaje a sus compañeros.</p>
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        {% include "comun/errores_form.html" %}
+        <div class="row">
+          <div class="col-md-6">{% include "comun/campo.html" with campo=form.remitente %}</div>
+          <div class="col-md-6">{% include "comun/campo.html" with campo=form.fecha_recepcion %}</div>
+        </div>
+        {% include "comun/campo.html" with campo=form.asunto %}
+        {% include "comun/campo.html" with campo=form.descripcion %}
+        {% include "comun/campo.html" with campo=form.adjunto %}
+        <button type="submit" class="btn btn-primary"><i class="bi bi-send" aria-hidden="true"></i> Enviar reporte</button>
+      </form>
+    </div></div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card pg-card mb-4"><div class="card-body">
+      <h2 class="h6"><i class="bi bi-lightbulb" aria-hidden="true"></i> Antes de reportar</h2>
+      <ul class="small mb-0">
+        <li>No haga clic en enlaces ni abra los adjuntos del correo.</li>
+        <li>Puede adjuntar una captura de pantalla o guardar el correo como <strong>.eml</strong> desde su cliente de correo.</li>
+        <li>Si ya hizo clic o escribió su contraseña, cámbiela y avise de inmediato a Soporte Técnico.</li>
+      </ul>
+    </div></div>
+    <div class="card pg-card">
+      <div class="card-header bg-white"><h2 class="h6 mb-0">Mis reportes recientes</h2></div>
+      <ul class="list-group list-group-flush">
+        {% for r in recientes %}
+        <li class="list-group-item d-flex justify-content-between align-items-center gap-2">
+          <a href="{% url 'reportes:detalle' r.pk %}" class="text-truncate">{{ r.asunto }}</a>
+          <span class="badge {{ r.estado|clase_estado_reporte }}">{{ r.get_estado_display }}</span>
+        </li>
+        {% empty %}
+        <li class="list-group-item text-muted small">Aún no ha enviado reportes.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
