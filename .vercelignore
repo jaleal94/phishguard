@@ -1,0 +1,11 @@
+# Nunca subir a Vercel secretos, entornos locales ni archivos de desarrollo.
+.env
+.venv/
+venv/
+db.sqlite3
+__pycache__/
+*.pyc
+.ruff_cache/
+capturas_anexo_a/
+staticfiles/
+*/tests/
