@@ -1,47 +1,126 @@
 {% extends "base_admin.html" %}
+{% load static %}
 {% block titulo %}Indicadores{% endblock %}
 {% block clase_main %}container-fluid py-4 px-lg-4{% endblock %}
 {% block contenido %}
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
   <div>
     <h1 class="h3 mb-0">Panel de indicadores</h1>
     <p class="text-muted mb-0">Bienvenido, {{ user.get_short_name }}.</p>
   </div>
-  <div class="d-flex gap-2">
-    <a class="btn btn-outline-secondary disabled" aria-disabled="true"><i class="bi bi-filetype-csv" aria-hidden="true"></i> Exportar CSV <span class="badge text-bg-info">Próximamente</span></a>
-    <a class="btn btn-outline-secondary disabled" aria-disabled="true"><i class="bi bi-filetype-pdf" aria-hidden="true"></i> Exportar PDF <span class="badge text-bg-info">Próximamente</span></a>
+  <div class="d-flex flex-wrap gap-2">
+    <button class="btn btn-outline-secondary" type="button" disabled><i class="bi bi-filetype-csv" aria-hidden="true"></i> Exportar CSV <span class="badge text-bg-info">Próximamente</span></button>
+    <button class="btn btn-outline-secondary" type="button" disabled><i class="bi bi-filetype-pdf" aria-hidden="true"></i> Exportar PDF <span class="badge text-bg-info">Próximamente</span></button>
   </div>
 </div>
+
+<form method="get" class="card pg-card card-body mb-4" aria-label="Filtros del panel">
+  <div class="row g-2 align-items-end">
+    <div class="col-sm-6 col-lg-4">
+      <label class="form-label" for="f-depto">Departamento</label>
+      <select class="form-select" id="f-depto" name="departamento">
+        <option value="">Todos</option>
+        {% for d in departamentos %}<option value="{{ d.pk }}" {% if filtros.departamento.pk == d.pk %}selected{% endif %}>{{ d.nombre }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-sm-6 col-lg-4">
+      <label class="form-label" for="f-campana">Campaña</label>
+      <select class="form-select" id="f-campana" name="campana">
+        <option value="">Todas</option>
+        {% for c in campanas %}<option value="{{ c.pk }}" {% if filtros.campana.pk == c.pk %}selected{% endif %}>{{ c.nombre }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-lg-4 d-flex gap-2">
+      <button class="btn btn-primary flex-fill" type="submit"><i class="bi bi-funnel" aria-hidden="true"></i> Aplicar</button>
+      {% if filtros.departamento or filtros.campana %}<a class="btn btn-outline-secondary" href="{% url 'panel:admin_panel' %}">Limpiar</a>{% endif %}
+    </div>
+  </div>
+</form>
 
 <div class="row g-3 mb-4">
   <div class="col-6 col-xl-3"><div class="card pg-card pg-kpi h-100"><div class="card-body">
-    <div class="pg-kpi-etiqueta">Colaboradores activos</div><div class="pg-kpi-valor">{{ total_colaboradores }}</div>
+    <div class="pg-kpi-etiqueta">Tasa de clics</div>
+    <div class="pg-kpi-valor">{% if totales.enviados %}{{ totales.tasa_clics }}%{% else %}—{% endif %}</div>
+    <div class="small text-muted">{% if totales.enviados %}{{ totales.clics }} de {{ totales.enviados }} enviados{% else %}Sin datos de campañas{% endif %}</div>
+    {% if variacion is not None %}<div class="small {% if variacion <= -50 %}text-success{% else %}text-muted{% endif %}">Variación vs. línea base: {{ variacion }}% <span class="visually-hidden">(meta: −50 %)</span></div>{% endif %}
   </div></div></div>
   <div class="col-6 col-xl-3"><div class="card pg-card pg-kpi h-100"><div class="card-body">
-    <div class="pg-kpi-etiqueta">Departamentos</div><div class="pg-kpi-valor">{{ total_departamentos }}</div>
+    <div class="pg-kpi-etiqueta">Tasa de reporte</div>
+    <div class="pg-kpi-valor">{% if totales.enviados %}{{ totales.tasa_reporte }}%{% else %}—{% endif %}</div>
+    <div class="small text-muted">{% if totales.enviados %}{{ totales.reportes }} de {{ totales.enviados }} enviados · meta 30 %{% else %}Sin datos de campañas{% endif %}</div>
   </div></div></div>
   <div class="col-6 col-xl-3"><div class="card pg-card pg-kpi h-100"><div class="card-body">
-    <div class="pg-kpi-etiqueta">Tasa de clics</div><div class="pg-kpi-valor text-muted">—</div><div class="small text-muted">Disponible al cerrar la primera campaña</div>
+    <div class="pg-kpi-etiqueta">Cobertura de capacitación</div>
+    <div class="pg-kpi-valor">{% if capacitacion.total %}{{ capacitacion.cobertura }}%{% else %}—{% endif %}</div>
+    <div class="small text-muted">{{ capacitacion.a_tiempo }} de {{ capacitacion.total }} asignaciones a tiempo · meta 80 %</div>
   </div></div></div>
   <div class="col-6 col-xl-3"><div class="card pg-card pg-kpi h-100"><div class="card-body">
-    <div class="pg-kpi-etiqueta">Tasa de reporte</div><div class="pg-kpi-valor text-muted">—</div><div class="small text-muted">Disponible al cerrar la primera campaña</div>
+    <div class="pg-kpi-etiqueta">Reportes atendidos</div>
+    <div class="pg-kpi-valor">{% if reportes.total %}{{ reportes.porcentaje_atendidos }}%{% else %}—{% endif %}</div>
+    <div class="small text-muted">{{ reportes.pendientes }} pendiente{{ reportes.pendientes|pluralize }} · {{ reportes.total }} en total</div>
   </div></div></div>
 </div>
 
-<div class="card pg-card">
-  <div class="card-header bg-white d-flex justify-content-between align-items-center">
-    <h2 class="h6 mb-0">Actividad reciente</h2>
-    <a href="{% url 'panel:bitacora' %}" class="small">Ver bitácora completa</a>
+<div class="row g-4">
+  <div class="col-xl-8">
+    <div class="card pg-card h-100">
+      <div class="card-header bg-white"><h2 class="h6 mb-0" id="titulo-grafico">Evolución por campaña (% de destinatarios enviados)</h2></div>
+      <div class="card-body">
+        {% if filas %}
+        <div class="pg-grafico"><canvas id="grafico-campanas" role="img" aria-labelledby="titulo-grafico" aria-describedby="tabla-campanas"></canvas></div>
+        {{ grafico|json_script:"datos-grafico" }}
+        <div class="table-responsive mt-3">
+          <table class="table table-sm align-middle mb-0" id="tabla-campanas">
+            <caption class="small">Datos del gráfico por campaña</caption>
+            <thead class="table-light"><tr><th scope="col">Campaña</th><th scope="col">Fecha</th><th scope="col" class="text-end">Enviados</th><th scope="col" class="text-end">Clics</th><th scope="col" class="text-end">Tasa de clics</th><th scope="col" class="text-end">Reportes</th><th scope="col" class="text-end">Tasa de reporte</th></tr></thead>
+            <tbody>
+            {% for f in filas %}
+              <tr><td>{{ f.nombre }}</td><td class="text-nowrap">{{ f.fecha|date:"d/m/Y" }}</td><td class="text-end">{{ f.enviados }}</td><td class="text-end">{{ f.clics }}</td><td class="text-end">{{ f.tasa_clics }}%</td><td class="text-end">{{ f.reportes }}</td><td class="text-end">{{ f.tasa_reporte }}%</td></tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-5">
+          <i class="bi bi-graph-up fs-1 d-block mb-2" aria-hidden="true"></i>
+          Sin datos de campañas para los filtros seleccionados.<br>
+          <span class="small">El gráfico aparecerá cuando haya campañas de simulación enviadas.</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
   </div>
-  <ul class="list-group list-group-flush">
-    {% for r in ultimas_acciones %}
-    <li class="list-group-item small d-flex flex-wrap justify-content-between gap-2">
-      <span><span class="badge text-bg-light border">{{ r.accion }}</span> {{ r.objeto }}</span>
-      <span class="text-muted">{{ r.usuario.email|default:"sistema" }} · {{ r.ocurrido_en|date:"d/m/Y H:i" }}</span>
-    </li>
-    {% empty %}
-    <li class="list-group-item text-muted">Sin actividad registrada.</li>
-    {% endfor %}
-  </ul>
+  <div class="col-xl-4">
+    <div class="card pg-card mb-4"><div class="card-body">
+      <h2 class="h6">Organización{% if filtros.departamento %} · {{ filtros.departamento.nombre }}{% endif %}</h2>
+      <dl class="row small mb-0">
+        <dt class="col-8 fw-normal">Colaboradores activos</dt><dd class="col-4 text-end fw-semibold">{{ total_colaboradores }}</dd>
+        <dt class="col-8 fw-normal">Cursos completados</dt><dd class="col-4 text-end fw-semibold">{{ capacitacion.completadas }}/{{ capacitacion.total }}</dd>
+        <dt class="col-8 fw-normal">Phishing confirmado</dt><dd class="col-4 text-end fw-semibold">{{ reportes.confirmados }}</dd>
+      </dl>
+    </div></div>
+    <div class="card pg-card">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h2 class="h6 mb-0">Actividad reciente</h2>
+        <a href="{% url 'panel:bitacora' %}" class="small">Ver bitácora</a>
+      </div>
+      <ul class="list-group list-group-flush">
+        {% for r in ultimas_acciones %}
+        <li class="list-group-item small">
+          <span class="badge text-bg-light border">{{ r.accion }}</span> {{ r.objeto|truncatechars:40 }}
+          <div class="text-muted">{{ r.usuario.email|default:"sistema" }} · {{ r.ocurrido_en|date:"d/m/Y H:i" }}</div>
+        </li>
+        {% empty %}
+        <li class="list-group-item text-muted">Sin actividad registrada.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
 </div>
+{% endblock %}
+{% block scripts %}
+{% if filas %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+<script src="{% static 'js/panel_graficos.js' %}"></script>
+{% endif %}
 {% endblock %}

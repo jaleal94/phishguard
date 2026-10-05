@@ -76,3 +76,7 @@ main { flex: 1 0 auto; }
 .pg-contenido-leccion { line-height: 1.65; }
 .pg-contenido-leccion img { max-width: 100%; height: auto; border-radius: .5rem; }
 .pg-contenido-leccion blockquote { border-left: 4px solid #f59e0b; padding-left: 1rem; color: #3e4c59; }
+
+/* Panel de indicadores */
+.pg-grafico { position: relative; height: 18rem; }
+@media (max-width: 576px) { .pg-grafico { height: 14rem; } }

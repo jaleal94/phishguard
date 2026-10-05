@@ -7,21 +7,45 @@ from django.shortcuts import render
 
 from capacitacion.models import Asignacion, Curso, Intento
 from reportes.models import ReporteSospechoso
+from simulaciones.models import Campana
 from usuarios.decoradores import admin_requerido
 from usuarios.models import Departamento, Usuario
 
+from . import indicadores
 from .models import Bitacora
+
+
+def _filtro(request, nombre, modelo):
+    """Lee un filtro numérico de la URL y devuelve el objeto o None."""
+    valor = request.GET.get(nombre, "")
+    return modelo.objects.filter(pk=valor).first() if valor.isdigit() else None
 
 
 @admin_requerido
 def admin_panel(request):
-    """Panel de indicadores del Administrador (los gráficos llegan en la fase final)."""
+    """RF-26 y RF-27: indicadores de simulación, capacitación y reportes con filtros."""
+    departamento = _filtro(request, "departamento", Departamento)
+    campana = _filtro(request, "campana", Campana)
+    filas = indicadores.indicadores_campanas(departamento, campana)
+    usuarios = Usuario.objects.filter(rol=Usuario.Rol.COLABORADOR, is_active=True)
+    if departamento:
+        usuarios = usuarios.filter(departamento=departamento)
     contexto = {
-        "total_colaboradores": Usuario.objects.filter(
-            rol=Usuario.Rol.COLABORADOR, is_active=True
-        ).count(),
-        "total_departamentos": Departamento.objects.filter(activo=True).count(),
-        "ultimas_acciones": Bitacora.objects.select_related("usuario")[:8],
+        "filas": filas,
+        "totales": indicadores.totales_campanas(filas),
+        "variacion": indicadores.variacion_clics(filas),
+        "capacitacion": indicadores.indicadores_capacitacion(departamento),
+        "reportes": indicadores.indicadores_reportes(departamento),
+        "total_colaboradores": usuarios.count(),
+        "departamentos": Departamento.objects.all(),
+        "campanas": indicadores.campanas_para_filtro(),
+        "filtros": {"departamento": departamento, "campana": campana},
+        "grafico": {
+            "etiquetas": [f["nombre"] for f in filas],
+            "clics": [f["tasa_clics"] for f in filas],
+            "reportes": [f["tasa_reporte"] for f in filas],
+        },
+        "ultimas_acciones": Bitacora.objects.select_related("usuario")[:6],
     }
     return render(request, "panel/admin_panel.html", contexto)
 
