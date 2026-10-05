@@ -16,7 +16,31 @@
     <div class="card pg-card h-100">
       <div class="card-body">
         <h2 class="h5"><i class="bi bi-mortarboard" aria-hidden="true"></i> Mis cursos asignados</h2>
+        {% for a in asignaciones %}
+        <div class="border rounded p-3 mb-2">
+          <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+            <div>
+              <a class="fw-semibold" href="{% url 'capacitacion:curso_ver' a.curso.pk %}">{{ a.curso.titulo }}</a>
+              {% if a.origen == "SIMULACION" %}<span class="badge text-bg-warning ms-1">Refuerzo</span>{% endif %}
+              <div class="small text-muted">
+                {% if a.fecha_limite %}Fecha límite: {{ a.fecha_limite|date:"d/m/Y" }}{% endif %}
+                {% if a.ultimo_intento %} · Última nota: <strong>{{ a.ultimo_intento.nota }}</strong>/100{% endif %}
+              </div>
+            </div>
+            {% if a.completada %}<span class="badge text-bg-success">Completado</span>
+            {% elif a.vencida %}<span class="badge text-bg-danger">Vencido</span>
+            {% else %}<span class="badge text-bg-warning">Pendiente</span>{% endif %}
+          </div>
+          <div class="progress mt-2" role="progressbar" aria-label="Avance de {{ a.curso.titulo }}" aria-valuenow="{{ a.avance }}" aria-valuemin="0" aria-valuemax="100" style="height: .9rem">
+            <div class="progress-bar {% if a.completada %}bg-success{% endif %}" style="width: {{ a.avance }}%">{{ a.avance }}%</div>
+          </div>
+          <div class="mt-2">
+            <a class="btn btn-sm {% if a.completada %}btn-outline-primary{% else %}btn-primary{% endif %}" href="{% url 'capacitacion:curso_ver' a.curso.pk %}">{% if a.completada %}Repasar{% elif a.avance %}Continuar{% else %}Comenzar{% endif %}</a>
+          </div>
+        </div>
+        {% empty %}
         <p class="text-muted mb-0">No tiene cursos asignados por ahora.</p>
+        {% endfor %}
       </div>
     </div>
   </div>
@@ -25,7 +49,14 @@
       <div class="card-body">
         <h2 class="h5"><i class="bi bi-award" aria-hidden="true"></i> Mis certificados</h2>
         <p class="text-muted small">Descargue el certificado de los cursos aprobados.</p>
-        <button class="btn btn-outline-secondary btn-sm" type="button" disabled>Descargar certificado <span class="badge text-bg-info">Próximamente</span></button>
+        {% for a in aprobadas %}
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+          <span class="small">{{ a.curso.titulo }}</span>
+          <a class="btn btn-outline-secondary btn-sm" href="{% url 'capacitacion:certificado' a.curso.pk %}">Descargar <span class="badge text-bg-info">Próximamente</span></a>
+        </div>
+        {% empty %}
+        <p class="small text-muted mb-0">Aún no tiene cursos aprobados.</p>
+        {% endfor %}
       </div>
     </div>
     <div class="card pg-card">

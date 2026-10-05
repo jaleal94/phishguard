@@ -1,0 +1,120 @@
+{% extends "base_admin.html" %}
+{% load capacitacion_extras %}
+{% block titulo %}{{ curso.titulo }}{% endblock %}
+{% block clase_main %}container-fluid py-4 px-lg-4{% endblock %}
+{% block contenido %}
+<nav aria-label="Ruta de navegación"><ol class="breadcrumb">
+  <li class="breadcrumb-item"><a href="{% url 'capacitacion:cursos_admin' %}">Cursos</a></li>
+  <li class="breadcrumb-item active" aria-current="page">{{ curso.titulo }}</li>
+</ol></nav>
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-4">
+  <div>
+    <h1 class="h3 mb-1">{{ curso.titulo }}
+      <span class="badge {{ curso.estado|clase_estado }} fs-6 align-middle">{{ curso.get_estado_display }}</span>
+      {% if curso.es_refuerzo %}<span class="badge text-bg-warning fs-6 align-middle">Refuerzo</span>{% endif %}
+    </h1>
+    <p class="text-muted mb-0">{{ curso.descripcion|default:"Sin descripción." }}</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-outline-secondary" href="{% url 'capacitacion:curso_ver' curso.pk %}"><i class="bi bi-eye" aria-hidden="true"></i> Vista previa</a>
+    <a class="btn btn-outline-primary" href="{% url 'capacitacion:curso_editar' curso.pk %}"><i class="bi bi-pencil" aria-hidden="true"></i> Editar</a>
+    {% if curso.esta_publicado %}
+    <a class="btn btn-primary" href="{% url 'capacitacion:curso_asignar' curso.pk %}"><i class="bi bi-person-check" aria-hidden="true"></i> Asignar</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-xl-6">
+    <div class="card pg-card mb-4">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h2 class="h6 mb-0"><i class="bi bi-list-ol" aria-hidden="true"></i> Lecciones ({{ lecciones|length }})</h2>
+        <a class="btn btn-sm btn-primary" href="{% url 'capacitacion:leccion_crear' curso.pk %}"><i class="bi bi-plus-lg" aria-hidden="true"></i> Lección</a>
+      </div>
+      <ul class="list-group list-group-flush">
+        {% for l in lecciones %}
+        <li class="list-group-item d-flex justify-content-between align-items-center gap-2">
+          <span><span class="badge text-bg-light border me-1">{{ l.orden }}</span> {{ l.titulo }}{% if l.video_url %} <i class="bi bi-camera-video text-muted" title="Incluye video" aria-label="Incluye video"></i>{% endif %}</span>
+          <span class="text-nowrap">
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'capacitacion:leccion_editar' l.pk %}" aria-label="Editar {{ l.titulo }}"><i class="bi bi-pencil" aria-hidden="true"></i></a>
+            <form method="post" action="{% url 'capacitacion:leccion_eliminar' l.pk %}" class="d-inline" onsubmit="return confirm('¿Eliminar la lección «{{ l.titulo|escapejs }}»?');">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit" aria-label="Eliminar {{ l.titulo }}"><i class="bi bi-trash" aria-hidden="true"></i></button></form>
+          </span>
+        </li>
+        {% empty %}
+        <li class="list-group-item text-muted">Este curso aún no tiene lecciones.</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="card pg-card">
+      <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <h2 class="h6 mb-0"><i class="bi bi-ui-checks" aria-hidden="true"></i> Evaluación</h2>
+        <span>
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'capacitacion:evaluacion_editar' curso.pk %}">{% if evaluacion %}Configurar{% else %}Crear evaluación{% endif %}</a>
+          {% if evaluacion %}<a class="btn btn-sm btn-primary" href="{% url 'capacitacion:pregunta_crear' curso.pk %}"><i class="bi bi-plus-lg" aria-hidden="true"></i> Pregunta</a>{% endif %}
+        </span>
+      </div>
+      {% if evaluacion %}
+      <div class="card-body pb-0 small text-muted">Nota mínima: <strong>{{ evaluacion.nota_minima }}/100</strong> · Intentos máximos: <strong>{{ evaluacion.intentos_maximos }}</strong></div>
+      <ol class="list-group list-group-flush list-group-numbered">
+        {% for p in preguntas %}
+        <li class="list-group-item d-flex justify-content-between align-items-start gap-2">
+          <div class="ms-2 me-auto">
+            <div>{{ p.enunciado }}</div>
+            <ul class="small text-muted mb-0 ps-3">
+              {% for o in p.opciones.all %}<li>{% if o.es_correcta %}<strong class="text-success">{{ o.texto }} <i class="bi bi-check-lg" aria-label="correcta"></i></strong>{% else %}{{ o.texto }}{% endif %}</li>{% endfor %}
+            </ul>
+          </div>
+          <span class="text-nowrap">
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'capacitacion:pregunta_editar' p.pk %}" aria-label="Editar pregunta"><i class="bi bi-pencil" aria-hidden="true"></i></a>
+            <form method="post" action="{% url 'capacitacion:pregunta_eliminar' p.pk %}" class="d-inline" onsubmit="return confirm('¿Eliminar esta pregunta?');">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit" aria-label="Eliminar pregunta"><i class="bi bi-trash" aria-hidden="true"></i></button></form>
+          </span>
+        </li>
+        {% empty %}
+        <li class="list-group-item text-muted">Aún no hay preguntas; sin ellas, el curso se completa al terminar las lecciones.</li>
+        {% endfor %}
+      </ol>
+      {% else %}
+      <div class="card-body text-muted small">Sin evaluación: el curso se completa al terminar todas las lecciones.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-xl-6">
+    <div class="card pg-card">
+      <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <h2 class="h6 mb-0"><i class="bi bi-people" aria-hidden="true"></i> Asignaciones ({{ filas|length }})</h2>
+        <a class="btn btn-sm btn-outline-secondary" href="{% url 'capacitacion:curso_recordatorios' curso.pk %}"><i class="bi bi-bell" aria-hidden="true"></i> Recordatorios <span class="badge text-bg-info">Próximamente</span></a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <caption class="visually-hidden">Avance por usuario</caption>
+          <thead class="table-light"><tr><th scope="col">Usuario</th><th scope="col">Origen</th><th scope="col">Límite</th><th scope="col" style="min-width:8rem">Avance</th><th scope="col">Estado</th></tr></thead>
+          <tbody>
+          {% for f in filas %}
+            <tr>
+              <td><div>{{ f.asignacion.usuario.nombre_completo }}</div><div class="small text-muted">{{ f.asignacion.usuario.departamento|default:"" }}</div></td>
+              <td class="small">{{ f.asignacion.get_origen_display }}</td>
+              <td class="small text-nowrap">{{ f.asignacion.fecha_limite|date:"d/m/Y"|default:"—" }}</td>
+              <td>
+                <div class="progress" role="progressbar" aria-label="Avance" aria-valuenow="{{ f.avance }}" aria-valuemin="0" aria-valuemax="100" style="height: .9rem">
+                  <div class="progress-bar" style="width: {{ f.avance }}%">{{ f.avance }}%</div>
+                </div>
+              </td>
+              <td>
+                {% if f.asignacion.completada %}<span class="badge text-bg-success">Completado</span>
+                {% elif f.asignacion.vencida %}<span class="badge text-bg-danger">Vencido</span>
+                {% else %}<span class="badge text-bg-warning">Pendiente</span>{% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="5" class="text-center text-muted py-4">{% if curso.esta_publicado %}Aún no hay asignaciones.{% else %}Publique el curso para poder asignarlo.{% endif %}</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

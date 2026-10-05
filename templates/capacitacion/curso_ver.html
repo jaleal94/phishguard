@@ -1,0 +1,93 @@
+{% extends base_plantilla %}
+{% load capacitacion_extras %}
+{% block titulo %}{{ curso.titulo }}{% endblock %}
+{% block contenido %}
+{% if vista_previa %}
+<div class="alert alert-info d-flex flex-wrap justify-content-between align-items-center gap-2" role="note">
+  <span><i class="bi bi-eye me-1" aria-hidden="true"></i> Vista previa del Administrador: el avance no se registra.</span>
+  <a class="btn btn-sm btn-outline-primary" href="{% url 'capacitacion:curso_detalle_admin' curso.pk %}">Volver a la gestión del curso</a>
+</div>
+{% endif %}
+
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-1">{{ curso.titulo }}</h1>
+    {% if asignacion and asignacion.fecha_limite %}<p class="text-muted mb-0 small">Fecha límite: {{ asignacion.fecha_limite|date:"d/m/Y" }}{% if asignacion.vencida %} · <span class="text-danger fw-semibold">Vencido</span>{% endif %}</p>{% endif %}
+  </div>
+  {% if asignacion %}
+  <div class="pg-avance">
+    <div class="small text-muted mb-1">Avance: {{ avance }}%</div>
+    <div class="progress" role="progressbar" aria-label="Avance del curso" aria-valuenow="{{ avance }}" aria-valuemin="0" aria-valuemax="100">
+      <div class="progress-bar {% if asignacion.completada %}bg-success{% endif %}" style="width: {{ avance }}%"></div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+{% if asignacion.completada %}
+<div class="alert alert-success d-flex flex-wrap justify-content-between align-items-center gap-2" role="status">
+  <span><i class="bi bi-patch-check-fill me-1" aria-hidden="true"></i> Completó este curso el {{ asignacion.completada_en|date:"d/m/Y" }}.</span>
+  <a class="btn btn-sm btn-outline-success" href="{% url 'capacitacion:certificado' curso.pk %}">Descargar certificado <span class="badge text-bg-info">Próximamente</span></a>
+</div>
+{% endif %}
+
+<div class="row g-4">
+  <aside class="col-lg-4 order-lg-1">
+    <div class="card pg-card">
+      <div class="card-header bg-white"><h2 class="h6 mb-0">Lecciones</h2></div>
+      <nav class="list-group list-group-flush" aria-label="Lecciones del curso">
+        {% for l in lecciones %}
+        <a href="?leccion={{ l.pk }}" class="list-group-item list-group-item-action d-flex gap-2 align-items-start {% if l == actual %}active{% endif %}" {% if l == actual %}aria-current="true"{% endif %}>
+          {% if l.pk in completadas %}<i class="bi bi-check-circle-fill {% if l != actual %}text-success{% endif %}" aria-label="Completada"></i>
+          {% else %}<i class="bi bi-circle" aria-label="Pendiente"></i>{% endif %}
+          <span>{{ l.titulo }}</span>
+        </a>
+        {% empty %}
+        <span class="list-group-item text-muted">Sin lecciones.</span>
+        {% endfor %}
+        {% if tiene_evaluacion %}
+        <a href="{% url 'capacitacion:evaluacion' curso.pk %}" class="list-group-item list-group-item-action d-flex gap-2 fw-semibold">
+          <i class="bi bi-ui-checks" aria-hidden="true"></i> Evaluación final
+        </a>
+        {% endif %}
+      </nav>
+    </div>
+  </aside>
+
+  <section class="col-lg-8" aria-labelledby="titulo-leccion">
+    {% if actual %}
+    <article class="card pg-card">
+      <div class="card-body p-4">
+        <p class="text-muted small mb-1">Lección {{ numero }} de {{ lecciones|length }}</p>
+        <h2 class="h4" id="titulo-leccion">{{ actual.titulo }}</h2>
+        {% with embed=actual.video_url|video_embed %}
+        {% if embed %}
+        <div class="ratio ratio-16x9 my-3"><iframe src="{{ embed }}" title="Video: {{ actual.titulo }}" allow="accelerometer; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+        {% elif actual.video_url %}
+        <p><a href="{{ actual.video_url }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-camera-video" aria-hidden="true"></i> Ver video de la lección</a></p>
+        {% endif %}
+        {% endwith %}
+        <div class="pg-contenido-leccion">{{ actual.contenido_html|safe }}</div>
+      </div>
+      <div class="card-footer bg-white d-flex flex-wrap justify-content-between gap-2">
+        <div>{% if anterior %}<a class="btn btn-outline-secondary" href="?leccion={{ anterior.pk }}"><i class="bi bi-arrow-left" aria-hidden="true"></i> Anterior</a>{% endif %}</div>
+        <div class="d-flex flex-wrap gap-2">
+          {% if asignacion and actual.pk not in completadas %}
+          <form method="post" action="{% url 'capacitacion:leccion_completar' curso.pk actual.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check2" aria-hidden="true"></i> Marcar como completada{% if siguiente %} y continuar{% endif %}</button>
+          </form>
+          {% elif siguiente %}
+          <a class="btn btn-primary" href="?leccion={{ siguiente.pk }}">Siguiente <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+          {% elif tiene_evaluacion %}
+          <a class="btn btn-primary" href="{% url 'capacitacion:evaluacion' curso.pk %}">Ir a la evaluación <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+          {% endif %}
+        </div>
+      </div>
+    </article>
+    {% else %}
+    <div class="card pg-card card-body text-muted">Este curso todavía no tiene lecciones.</div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

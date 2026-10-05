@@ -1,0 +1,51 @@
+{% extends "base_admin.html" %}
+{% load formularios %}
+{% block titulo %}Pregunta · {{ curso.titulo }}{% endblock %}
+{% block contenido %}
+<nav aria-label="Ruta de navegación"><ol class="breadcrumb">
+  <li class="breadcrumb-item"><a href="{% url 'capacitacion:cursos_admin' %}">Cursos</a></li>
+  <li class="breadcrumb-item"><a href="{% url 'capacitacion:curso_detalle_admin' curso.pk %}">{{ curso.titulo }}</a></li>
+  <li class="breadcrumb-item active" aria-current="page">Pregunta</li>
+</ol></nav>
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card pg-card"><div class="card-body p-4">
+      <h1 class="h4 mb-4">{% if form.instance.pk %}Editar pregunta{% else %}Nueva pregunta{% endif %}</h1>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% include "comun/errores_form.html" %}
+        <div class="row">
+          <div class="col-sm-3 col-lg-2">{% include "comun/campo.html" with campo=form.orden %}</div>
+          <div class="col-sm-9 col-lg-10">{% include "comun/campo.html" with campo=form.enunciado %}</div>
+        </div>
+        <fieldset>
+          <legend class="h6">Opciones de respuesta</legend>
+          <p class="form-text mt-0">Mínimo dos opciones; marque exactamente una como correcta. Deje vacías las que no use.</p>
+          {{ formset.management_form }}
+          {% if formset.non_form_errors %}<div class="alert alert-danger" role="alert">{{ formset.non_form_errors|join:" " }}</div>{% endif %}
+          {% for f in formset %}
+          <div class="row g-2 align-items-center mb-2">
+            {{ f.id }}
+            <div class="col-12 col-md-8">
+              <label class="visually-hidden" for="{{ f.texto.id_for_label }}">Opción {{ forloop.counter }}</label>
+              {{ f.texto|bootstrap }}
+              {% if f.texto.errors %}<div class="invalid-feedback d-block">{{ f.texto.errors|join:" " }}</div>{% endif %}
+            </div>
+            <div class="col-6 col-md-2">
+              <div class="form-check">{{ f.es_correcta|bootstrap }}<label class="form-check-label" for="{{ f.es_correcta.id_for_label }}">Correcta</label></div>
+            </div>
+            <div class="col-6 col-md-2">
+              {% if f.instance.pk %}<div class="form-check">{{ f.DELETE|bootstrap }}<label class="form-check-label" for="{{ f.DELETE.id_for_label }}">Eliminar</label></div>{% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </fieldset>
+        <div class="d-flex gap-2 mt-3">
+          <button type="submit" class="btn btn-primary">Guardar pregunta</button>
+          <a href="{% url 'capacitacion:curso_detalle_admin' curso.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+      </form>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

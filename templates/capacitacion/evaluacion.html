@@ -1,0 +1,67 @@
+{% extends base_plantilla %}
+{% block titulo %}Evaluación · {{ curso.titulo }}{% endblock %}
+{% block contenido %}
+<nav aria-label="Ruta de navegación"><ol class="breadcrumb">
+  <li class="breadcrumb-item"><a href="{% url 'capacitacion:curso_ver' curso.pk %}">{{ curso.titulo }}</a></li>
+  <li class="breadcrumb-item active" aria-current="page">Evaluación</li>
+</ol></nav>
+
+<div class="row justify-content-center">
+  <div class="col-lg-9">
+    <h1 class="h3">Evaluación final</h1>
+    <p class="text-muted">
+      Nota mínima para aprobar: <strong>{{ evaluacion.nota_minima }}/100</strong> ·
+      Intentos permitidos: <strong>{{ evaluacion.intentos_maximos }}</strong>
+      {% if not vista_previa %} · Intentos restantes: <strong>{{ intentos_restantes }}</strong>{% endif %}
+    </p>
+
+    {% if vista_previa %}
+    <div class="alert alert-info" role="note"><i class="bi bi-eye me-1" aria-hidden="true"></i> Vista previa del Administrador: se marcan las respuestas correctas y no se puede enviar.</div>
+    {% for p in preguntas %}
+    <div class="card pg-card mb-3"><div class="card-body">
+      <p class="fw-semibold mb-2">{{ forloop.counter }}. {{ p.enunciado }}</p>
+      <ul class="list-unstyled mb-0">
+        {% for o in p.opciones.all %}<li>{% if o.es_correcta %}<i class="bi bi-check-circle-fill text-success" aria-label="Correcta"></i> <strong>{{ o.texto }}</strong>{% else %}<i class="bi bi-circle text-muted" aria-hidden="true"></i> {{ o.texto }}{% endif %}</li>{% endfor %}
+      </ul>
+    </div></div>
+    {% endfor %}
+
+    {% elif motivo %}
+    <div class="alert alert-warning" role="status"><i class="bi bi-info-circle me-1" aria-hidden="true"></i> {{ motivo }}</div>
+    <a class="btn btn-outline-primary" href="{% url 'capacitacion:curso_ver' curso.pk %}">Volver al curso</a>
+
+    {% else %}
+    {% if error %}<div class="alert alert-danger" role="alert">{{ error }}</div>{% endif %}
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% for p in preguntas %}
+      <fieldset class="card pg-card mb-3"><div class="card-body">
+        <legend class="fs-6 fw-semibold mb-2">{{ forloop.counter }}. {{ p.enunciado }}</legend>
+        {% for o in p.opciones.all %}
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="pregunta_{{ p.pk }}" id="op-{{ o.pk }}" value="{{ o.pk }}" required {% for pid, oid in elegidas.items %}{% if pid == p.pk and oid == o.pk %}checked{% endif %}{% endfor %}>
+          <label class="form-check-label" for="op-{{ o.pk }}">{{ o.texto }}</label>
+        </div>
+        {% endfor %}
+      </div></fieldset>
+      {% endfor %}
+      <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-send" aria-hidden="true"></i> Enviar respuestas</button>
+    </form>
+    {% endif %}
+
+    {% if intentos %}
+    <div class="card pg-card mt-4">
+      <div class="card-header bg-white"><h2 class="h6 mb-0">Mis intentos</h2></div>
+      <ul class="list-group list-group-flush">
+        {% for i in intentos %}
+        <li class="list-group-item d-flex justify-content-between">
+          <span>{{ i.creado_en|date:"d/m/Y H:i" }}</span>
+          <span><strong>{{ i.nota }}</strong>/100 {% if i.aprobado %}<span class="badge text-bg-success">Aprobado</span>{% else %}<span class="badge text-bg-danger">No aprobado</span>{% endif %}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -2,8 +2,10 @@
 
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.db.models import Count
 from django.shortcuts import render
 
+from capacitacion.models import Asignacion, Curso, Intento
 from usuarios.decoradores import admin_requerido
 from usuarios.models import Departamento, Usuario
 
@@ -25,8 +27,29 @@ def admin_panel(request):
 
 @login_required
 def mi_panel(request):
-    """Panel personal: cursos, notas, certificados y reportes del usuario."""
-    return render(request, "panel/mi_panel.html")
+    """Panel personal: cursos, notas, certificados y reportes del usuario.
+
+    RF-30: todas las consultas se filtran por el usuario autenticado.
+    """
+    asignaciones = list(
+        Asignacion.objects.filter(usuario=request.user, curso__estado=Curso.Estado.PUBLICADO)
+        .select_related("curso")
+        .annotate(
+            n_lecciones=Count("curso__lecciones", distinct=True),
+            n_progresos=Count("progresos", distinct=True),
+        )
+        .order_by("completada_en", "fecha_limite")
+    )
+    notas = {}
+    for intento in Intento.objects.filter(usuario=request.user).select_related("evaluacion"):
+        notas.setdefault(intento.evaluacion.curso_id, intento)  # el más reciente primero
+    for a in asignaciones:
+        a.avance = round(a.n_progresos * 100 / a.n_lecciones) if a.n_lecciones else 0
+        a.ultimo_intento = notas.get(a.curso_id)
+    aprobadas = [a for a in asignaciones if a.completada]
+    return render(
+        request, "panel/mi_panel.html", {"asignaciones": asignaciones, "aprobadas": aprobadas}
+    )
 
 
 @admin_requerido

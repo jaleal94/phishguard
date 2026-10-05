@@ -3,6 +3,7 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
+from capacitacion import demo as demo_capacitacion
 from usuarios.models import Departamento, Usuario
 
 DEPARTAMENTOS = [
@@ -66,7 +67,15 @@ class Command(BaseCommand):
                 )
                 creados += 1
 
-        mensaje = f"Datos de demostración listos ({creados} usuarios nuevos)."
+        admin = Usuario.objects.get(email="admin.demo@curex.net.ve")
+        asignaciones = demo_capacitacion.cargar(
+            admin, Usuario.objects.filter(rol=Usuario.Rol.COLABORADOR)
+        )
+
+        mensaje = (
+            f"Datos de demostración listos ({creados} usuarios y "
+            f"{asignaciones} asignaciones nuevas)."
+        )
         self.stdout.write(self.style.SUCCESS(mensaje))
         self.stdout.write("Credenciales de prueba:")
         self.stdout.write(f"  Administrador: admin.demo@curex.net.ve / {clave}")
