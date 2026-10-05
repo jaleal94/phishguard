@@ -1,0 +1,41 @@
+{% extends "base_admin.html" %}
+{% load static %}
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block estilos %}<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css">{% endblock %}
+{% block contenido %}
+<nav aria-label="Ruta de navegación"><ol class="breadcrumb">
+  <li class="breadcrumb-item"><a href="{% url 'capacitacion:cursos_admin' %}">Cursos</a></li>
+  <li class="breadcrumb-item"><a href="{% url 'capacitacion:curso_detalle_admin' curso.pk %}">{{ curso.titulo }}</a></li>
+  <li class="breadcrumb-item active" aria-current="page">Lección</li>
+</ol></nav>
+<div class="card pg-card"><div class="card-body p-4">
+  <h1 class="h4 mb-4">{{ titulo }}</h1>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% include "comun/errores_form.html" %}
+    <div class="row">
+      <div class="col-sm-3 col-lg-2">{% include "comun/campo.html" with campo=form.orden %}</div>
+      <div class="col-sm-9 col-lg-10">{% include "comun/campo.html" with campo=form.titulo %}</div>
+    </div>
+    <div class="mb-3">
+      <span class="form-label d-block" id="etiqueta-contenido">Contenido</span>
+      {{ form.contenido_html }}
+      <div id="editor-leccion" class="pg-editor bg-white" aria-labelledby="etiqueta-contenido"
+           data-campo="{{ form.contenido_html.id_for_label }}"
+           data-url-imagen="{% url 'capacitacion:subir_imagen' %}"></div>
+      <div id="editor-aviso" role="status" hidden></div>
+      <div class="form-text">El contenido se depura automáticamente: se eliminan scripts y código no permitido. Las imágenes se guardan en el almacenamiento de archivos.</div>
+      {% if form.contenido_html.errors %}<div class="invalid-feedback d-block">{{ form.contenido_html.errors|join:" " }}</div>{% endif %}
+    </div>
+    {% include "comun/campo.html" with campo=form.video_url %}
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary">Guardar lección</button>
+      <a href="{% url 'capacitacion:curso_detalle_admin' curso.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+    </div>
+  </form>
+</div></div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+<script src="{% static 'js/editor_leccion.js' %}"></script>
+{% endblock %}

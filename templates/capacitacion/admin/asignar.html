@@ -1,0 +1,37 @@
+{% extends "base_admin.html" %}
+{% load formularios %}
+{% block titulo %}Asignar · {{ curso.titulo }}{% endblock %}
+{% block contenido %}
+<nav aria-label="Ruta de navegación"><ol class="breadcrumb">
+  <li class="breadcrumb-item"><a href="{% url 'capacitacion:cursos_admin' %}">Cursos</a></li>
+  <li class="breadcrumb-item"><a href="{% url 'capacitacion:curso_detalle_admin' curso.pk %}">{{ curso.titulo }}</a></li>
+  <li class="breadcrumb-item active" aria-current="page">Asignar</li>
+</ol></nav>
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card pg-card"><div class="card-body p-4">
+      <h1 class="h4 mb-1">Asignar «{{ curso.titulo }}»</h1>
+      <p class="text-muted">A quienes ya tienen el curso asignado no se les duplica la asignación.</p>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% include "comun/errores_form.html" %}
+        <fieldset class="mb-3">
+          <legend class="form-label fs-6">{{ form.departamentos.label }}</legend>
+          <div class="row row-cols-1 row-cols-sm-2">
+            {% for casilla in form.departamentos %}
+            <div class="col"><div class="form-check">{{ casilla.tag }}<label class="form-check-label" for="{{ casilla.id_for_label }}">{{ casilla.choice_label }}</label></div></div>
+            {% endfor %}
+          </div>
+          <div class="form-text">{{ form.departamentos.help_text }}</div>
+        </fieldset>
+        {% include "comun/campo.html" with campo=form.usuarios %}
+        <div class="col-md-5 px-0">{% include "comun/campo.html" with campo=form.fecha_limite %}</div>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary"><i class="bi bi-person-check" aria-hidden="true"></i> Asignar</button>
+          <a href="{% url 'capacitacion:curso_detalle_admin' curso.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+      </form>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

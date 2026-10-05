@@ -169,9 +169,10 @@ else:
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "PhishGuard <no-responder@curex.net.ve>")
 
 # Integraciones
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
 SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
 SUPABASE_BUCKET = os.environ.get("SUPABASE_BUCKET", "phishguard")
+SUPABASE_BUCKET_PUBLICO = os.environ.get("SUPABASE_BUCKET_PUBLICO", "phishguard-publico")
 CRON_SECRET = os.environ.get("CRON_SECRET", "")
 SITE_URL = os.environ.get("SITE_URL", "http://localhost:8000").rstrip("/")
 

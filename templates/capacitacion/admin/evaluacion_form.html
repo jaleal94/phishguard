@@ -1,0 +1,27 @@
+{% extends "base_admin.html" %}
+{% block titulo %}Evaluación · {{ curso.titulo }}{% endblock %}
+{% block contenido %}
+<nav aria-label="Ruta de navegación"><ol class="breadcrumb">
+  <li class="breadcrumb-item"><a href="{% url 'capacitacion:cursos_admin' %}">Cursos</a></li>
+  <li class="breadcrumb-item"><a href="{% url 'capacitacion:curso_detalle_admin' curso.pk %}">{{ curso.titulo }}</a></li>
+  <li class="breadcrumb-item active" aria-current="page">Evaluación</li>
+</ol></nav>
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card pg-card"><div class="card-body p-4">
+      <h1 class="h4 mb-1">Evaluación del curso</h1>
+      <p class="text-muted">La nota se calcula sobre 100 según el porcentaje de respuestas correctas.</p>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% include "comun/errores_form.html" %}
+        {% include "comun/campo.html" with campo=form.nota_minima %}
+        {% include "comun/campo.html" with campo=form.intentos_maximos %}
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">Guardar</button>
+          <a href="{% url 'capacitacion:curso_detalle_admin' curso.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+      </form>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

@@ -19,7 +19,8 @@
         {% else %}Esta funcionalidad está planificada para la fase 2 del proyecto.{% endif %}
       </p>
       <div>
-        {% if volver %}<a class="btn btn-outline-primary" href="{% url volver %}"><i class="bi bi-arrow-left" aria-hidden="true"></i> Volver</a>
+        {% if volver_href %}<a class="btn btn-outline-primary" href="{{ volver_href }}"><i class="bi bi-arrow-left" aria-hidden="true"></i> Volver</a>
+        {% elif volver %}<a class="btn btn-outline-primary" href="{% url volver %}"><i class="bi bi-arrow-left" aria-hidden="true"></i> Volver</a>
         {% else %}<a class="btn btn-outline-primary" href="{% url 'inicio' %}"><i class="bi bi-house" aria-hidden="true"></i> Ir a mi panel</a>{% endif %}
       </div>
     </div>

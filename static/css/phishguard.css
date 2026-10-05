@@ -69,3 +69,10 @@ main { flex: 1 0 auto; }
   .pg-kpi-valor { font-size: 1.6rem; }
   main.container, main.container-fluid { padding-left: .75rem; padding-right: .75rem; }
 }
+
+/* Capacitación */
+.pg-editor { min-height: 18rem; }
+.pg-avance { min-width: 12rem; flex: 0 1 18rem; }
+.pg-contenido-leccion { line-height: 1.65; }
+.pg-contenido-leccion img { max-width: 100%; height: auto; border-radius: .5rem; }
+.pg-contenido-leccion blockquote { border-left: 4px solid #f59e0b; padding-left: 1rem; color: #3e4c59; }

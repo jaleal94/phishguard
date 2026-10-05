@@ -44,3 +44,8 @@ def registrar(accion, *, usuario=None, objeto="", detalle=None, request=None):
         },
     )
     return registro
+
+
+def cambios_formulario(form):
+    """Devuelve los campos modificados de un ModelForm, para el detalle de la bitácora."""
+    return {campo: str(form.cleaned_data.get(campo))[:200] for campo in form.changed_data}
