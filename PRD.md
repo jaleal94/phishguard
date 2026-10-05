@@ -147,7 +147,7 @@ Cada requisito se considera terminado cuando cumple su criterio de aceptación y
 - **RF-21:** una prueba confirma que el formulario simulado no guarda ningún valor escrito por el usuario.
 
 ### 8.4 Reporte de correos sospechosos
-- **RF-22:** el adjunto acepta solo .png, .jpg, .pdf y .eml, de hasta 5 MB, y se sube a Supabase Storage.
+- **RF-22:** el adjunto acepta solo .png, .jpg, .pdf y .eml, de hasta 4 MB, y se sube a Supabase Storage. *(Ajustado de 5 MB a 4 MB porque Vercel limita el cuerpo de cada petición a 4,5 MB.)*
 - **RF-23:** el cambio de estado queda registrado en la bitácora con el administrador que lo hizo.
 - **RF-24:** el Colaborador ve el nuevo estado en su panel y recibe un correo de notificación.
 - **RF-25:** si el asunto y el remitente coinciden con una campaña activa enviada al usuario, se crea un EventoSimulacion de tipo REPORTE.

@@ -1,0 +1,52 @@
+{% extends "base_admin.html" %}
+{% load reportes_extras %}
+{% block titulo %}Reporte #{{ reporte.pk }}{% endblock %}
+{% block contenido %}
+<nav aria-label="Ruta de navegación"><ol class="breadcrumb">
+  <li class="breadcrumb-item"><a href="{% url 'reportes:bandeja' %}">Reportes</a></li>
+  <li class="breadcrumb-item active" aria-current="page">#{{ reporte.pk }}</li>
+</ol></nav>
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card pg-card"><div class="card-body p-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+        <h1 class="h4 mb-0">{{ reporte.asunto }}</h1>
+        <span class="badge fs-6 {{ reporte.estado|clase_estado_reporte }}">{{ reporte.get_estado_display }}</span>
+      </div>
+      {% if reporte.es_simulacion %}
+      <div class="alert alert-info small" role="note"><i class="bi bi-bullseye" aria-hidden="true"></i> Coincide con la campaña de simulación <strong>{{ reporte.destinatario_sim.campana.nombre }}</strong>. Se registró como reporte de la simulación.</div>
+      {% endif %}
+      <dl class="row mb-0">
+        <dt class="col-sm-4">Reportado por</dt><dd class="col-sm-8">{{ reporte.reportado_por.nombre_completo }} <span class="text-muted">&lt;{{ reporte.reportado_por.email }}&gt;</span></dd>
+        <dt class="col-sm-4">Departamento</dt><dd class="col-sm-8">{{ reporte.reportado_por.departamento|default:"—" }}</dd>
+        <dt class="col-sm-4">Remitente</dt><dd class="col-sm-8 text-break">{{ reporte.remitente }}</dd>
+        <dt class="col-sm-4">Recibido</dt><dd class="col-sm-8">{{ reporte.fecha_recepcion|date:"d/m/Y H:i" }}</dd>
+        <dt class="col-sm-4">Reportado</dt><dd class="col-sm-8">{{ reporte.creado_en|date:"d/m/Y H:i" }}</dd>
+        <dt class="col-sm-4">Comentarios</dt><dd class="col-sm-8">{{ reporte.descripcion|linebreaksbr|default:"—" }}</dd>
+        <dt class="col-sm-4">Adjunto</dt>
+        <dd class="col-sm-8">
+          {% if reporte.adjunto_url %}
+          <form method="post" action="{% url 'reportes:descargar_adjunto' reporte.pk %}" class="d-inline">{% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download" aria-hidden="true"></i> {{ reporte.adjunto_nombre|default:"Descargar" }}</button>
+          </form>
+          <div class="form-text">Ábralo solo en un equipo de análisis seguro.</div>
+          {% else %}—{% endif %}
+        </dd>
+        {% if reporte.atendido_en %}<dt class="col-sm-4">Atendido</dt><dd class="col-sm-8">{{ reporte.atendido_en|date:"d/m/Y H:i" }} por {{ reporte.atendido_por.nombre_completo|default:"—" }}</dd>{% endif %}
+      </dl>
+    </div></div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card pg-card"><div class="card-body p-4">
+      <h2 class="h5">Atender reporte</h2>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% include "comun/errores_form.html" %}
+        {% include "comun/campo.html" with campo=form.estado %}
+        {% include "comun/campo.html" with campo=form.comentario %}
+        <button type="submit" class="btn btn-primary w-100">Guardar y notificar</button>
+      </form>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

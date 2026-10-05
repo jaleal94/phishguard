@@ -1,4 +1,5 @@
 {% extends base_plantilla %}
+{% load reportes_extras %}
 {% block titulo %}Mi panel{% endblock %}
 {% block contenido %}
 <div class="mb-4">
@@ -62,7 +63,16 @@
     <div class="card pg-card">
       <div class="card-body">
         <h2 class="h5"><i class="bi bi-inbox" aria-hidden="true"></i> Mis reportes</h2>
-        <p class="text-muted mb-0">Aún no ha reportado correos sospechosos.</p>
+        <ul class="list-unstyled mb-0">
+          {% for r in reportes %}
+          <li class="d-flex justify-content-between align-items-center gap-2 py-1 border-bottom">
+            <a href="{% url 'reportes:detalle' r.pk %}" class="text-truncate small">{{ r.asunto }}</a>
+            <span class="badge {{ r.estado|clase_estado_reporte }}">{{ r.get_estado_display }}</span>
+          </li>
+          {% empty %}
+          <li class="text-muted">Aún no ha reportado correos sospechosos.</li>
+          {% endfor %}
+        </ul>
       </div>
     </div>
   </div>

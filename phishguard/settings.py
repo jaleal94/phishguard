@@ -205,3 +205,6 @@ if EJECUTANDO_PRUEBAS:
     LOGGING["loggers"]["django"]["level"] = "CRITICAL"
 
 MESSAGE_TAGS = {40: "danger"}  # messages.ERROR -> clase «danger» de Bootstrap
+
+# Reportes (RF-22). Vercel limita el cuerpo de cada petición a 4,5 MB.
+REPORTE_TAMANO_MAX_MB = 4

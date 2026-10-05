@@ -1,0 +1,39 @@
+{% extends base_plantilla %}
+{% load reportes_extras %}
+{% block titulo %}Reporte #{{ reporte.pk }}{% endblock %}
+{% block contenido %}
+<nav aria-label="Ruta de navegación"><ol class="breadcrumb">
+  <li class="breadcrumb-item"><a href="{% url 'panel:mi_panel' %}">Mi panel</a></li>
+  <li class="breadcrumb-item active" aria-current="page">Reporte #{{ reporte.pk }}</li>
+</ol></nav>
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card pg-card"><div class="card-body p-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+        <h1 class="h4 mb-0">{{ reporte.asunto }}</h1>
+        <span class="badge fs-6 {{ reporte.estado|clase_estado_reporte }}">{{ reporte.get_estado_display }}</span>
+      </div>
+      <dl class="row mb-0">
+        <dt class="col-sm-4">Remitente</dt><dd class="col-sm-8 text-break">{{ reporte.remitente }}</dd>
+        <dt class="col-sm-4">Recibido</dt><dd class="col-sm-8">{{ reporte.fecha_recepcion|date:"d/m/Y H:i" }}</dd>
+        <dt class="col-sm-4">Reportado</dt><dd class="col-sm-8">{{ reporte.creado_en|date:"d/m/Y H:i" }}</dd>
+        {% if reporte.descripcion %}<dt class="col-sm-4">Sus comentarios</dt><dd class="col-sm-8">{{ reporte.descripcion|linebreaksbr }}</dd>{% endif %}
+        {% if reporte.adjunto_nombre %}<dt class="col-sm-4">Adjunto</dt><dd class="col-sm-8">{{ reporte.adjunto_nombre }}</dd>{% endif %}
+        {% if reporte.atendido_en %}<dt class="col-sm-4">Atendido</dt><dd class="col-sm-8">{{ reporte.atendido_en|date:"d/m/Y H:i" }}</dd>{% endif %}
+      </dl>
+      {% if reporte.comentario_admin %}
+      <div class="alert alert-light border mt-3 mb-0">
+        <div class="small fw-semibold mb-1"><i class="bi bi-chat-left-text" aria-hidden="true"></i> Respuesta de Soporte Técnico</div>
+        {{ reporte.comentario_admin|linebreaksbr }}
+      </div>
+      {% endif %}
+      {% if reporte.es_simulacion %}
+      <div class="alert alert-success mt-3 mb-0" role="status">
+        <i class="bi bi-trophy-fill" aria-hidden="true"></i> <strong>¡Bien hecho!</strong> Este correo era parte de una simulación de concientización y usted lo identificó correctamente.
+      </div>
+      {% endif %}
+    </div></div>
+    <a class="btn btn-outline-primary mt-3" href="{% url 'reportes:reportar' %}"><i class="bi bi-flag" aria-hidden="true"></i> Reportar otro correo</a>
+  </div>
+</div>
+{% endblock %}

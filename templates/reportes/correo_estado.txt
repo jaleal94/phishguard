@@ -1,0 +1,12 @@
+{% autoescape off %}Hola, {{ reporte.reportado_por.nombre_completo }}:
+
+Su reporte del correo «{{ reporte.asunto }}» cambió al estado: {{ reporte.get_estado_display }}.
+{% if reporte.comentario_admin %}
+Comentario del Departamento de Soporte Técnico y Sistemas:
+{{ reporte.comentario_admin }}
+{% endif %}
+Puede consultar el detalle en: {{ url }}
+
+Gracias por ayudar a proteger a CUREX.
+PhishGuard · CUREX, C.A.
+{% endautoescape %}
