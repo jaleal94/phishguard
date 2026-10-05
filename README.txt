@@ -153,7 +153,6 @@ Creadas por el comando seed_demo:
   docs/base_de_datos/esquema_postgresql.sql   Esquema SQL de referencia
   templates/                    Plantillas HTML (Bootstrap 5)
   static/                       CSS, JavaScript e imágenes
-  PRD.md / CLAUDE.md            Especificación y reglas de desarrollo
 
 
 8. ALCANCE DEL PROTOTIPO

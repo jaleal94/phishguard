@@ -71,5 +71,3 @@ python manage.py check --deploy   # con DJANGO_DEBUG=False
 | `simulaciones` | Plantillas, campañas, píxel, clics y página educativa (RF-16 a RF-21) |
 | `reportes` | Reporte de correos sospechosos y bandeja (RF-22 a RF-25) |
 | `panel` | Indicadores, bitácora y panel personal (RF-26 a RF-30) |
-
-Las especificaciones completas están en `PRD.md` y las reglas de desarrollo en `CLAUDE.md`.
