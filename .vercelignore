@@ -9,3 +9,4 @@ __pycache__/
 capturas_anexo_a/
 staticfiles/
 */tests/
+.env.*
