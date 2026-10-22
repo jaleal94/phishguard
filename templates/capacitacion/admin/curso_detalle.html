@@ -19,6 +19,7 @@
   <div class="d-flex flex-wrap gap-2">
     <a class="btn btn-outline-secondary" href="{% url 'capacitacion:curso_ver' curso.pk %}"><i class="bi bi-eye" aria-hidden="true"></i> Vista previa</a>
     <a class="btn btn-outline-primary" href="{% url 'capacitacion:curso_editar' curso.pk %}"><i class="bi bi-pencil" aria-hidden="true"></i> Editar</a>
+    <a class="btn btn-outline-danger" href="{% url 'capacitacion:curso_eliminar' curso.pk %}"><i class="bi bi-trash" aria-hidden="true"></i> Eliminar</a>
     {% if curso.esta_publicado %}
     <a class="btn btn-primary" href="{% url 'capacitacion:curso_asignar' curso.pk %}"><i class="bi bi-person-check" aria-hidden="true"></i> Asignar</a>
     {% endif %}
@@ -90,7 +91,7 @@
       <div class="table-responsive">
         <table class="table table-sm align-middle mb-0">
           <caption class="visually-hidden">Avance por usuario</caption>
-          <thead class="table-light"><tr><th scope="col">Usuario</th><th scope="col">Origen</th><th scope="col">Límite</th><th scope="col" style="min-width:8rem">Avance</th><th scope="col">Estado</th></tr></thead>
+          <thead class="table-light"><tr><th scope="col">Usuario</th><th scope="col">Origen</th><th scope="col">Límite</th><th scope="col" style="min-width:8rem">Avance</th><th scope="col">Estado</th><th scope="col"><span class="visually-hidden">Acciones</span></th></tr></thead>
           <tbody>
           {% for f in filas %}
             <tr>
@@ -107,9 +108,10 @@
                 {% elif f.asignacion.vencida %}<span class="badge text-bg-danger">Vencido</span>
                 {% else %}<span class="badge text-bg-warning">Pendiente</span>{% endif %}
               </td>
+              <td class="text-end"><a class="btn btn-sm btn-outline-danger" href="{% url 'capacitacion:asignacion_eliminar' f.asignacion.pk %}" aria-label="Quitar asignación de {{ f.asignacion.usuario.nombre_completo }}"><i class="bi bi-x-lg" aria-hidden="true"></i></a></td>
             </tr>
           {% empty %}
-            <tr><td colspan="5" class="text-center text-muted py-4">{% if curso.esta_publicado %}Aún no hay asignaciones.{% else %}Publique el curso para poder asignarlo.{% endif %}</td></tr>
+            <tr><td colspan="6" class="text-center text-muted py-4">{% if curso.esta_publicado %}Aún no hay asignaciones.{% else %}Publique el curso para poder asignarlo.{% endif %}</td></tr>
           {% endfor %}
           </tbody>
         </table>

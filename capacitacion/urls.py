@@ -14,6 +14,12 @@ urlpatterns = [
     path("admin-panel/cursos/<int:pk>/", views.curso_detalle_admin, name="curso_detalle_admin"),
     path("admin-panel/cursos/<int:pk>/editar/", views.curso_editar, name="curso_editar"),
     path("admin-panel/cursos/<int:pk>/asignar/", views.curso_asignar, name="curso_asignar"),
+    path("admin-panel/cursos/<int:pk>/eliminar/", views.curso_eliminar, name="curso_eliminar"),
+    path(
+        "admin-panel/asignaciones/<int:pk>/eliminar/",
+        views.asignacion_eliminar,
+        name="asignacion_eliminar",
+    ),
     path(
         "admin-panel/cursos/<int:pk>/recordatorios/",
         views.curso_recordatorios,

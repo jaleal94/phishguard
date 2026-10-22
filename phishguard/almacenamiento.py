@@ -84,3 +84,17 @@ def url_firmada(ruta, segundos=300, bucket=None):
     except (requests.RequestException, KeyError, ValueError) as error:
         raise AlmacenamientoError("No se pudo generar el enlace de descarga.") from error
     return f"{settings.SUPABASE_URL}/storage/v1{firmada}"
+
+
+def eliminar(ruta, bucket=None):
+    """Elimina un objeto de Supabase Storage. Devuelve True si se eliminó o no existía."""
+    if not esta_configurado() or not ruta:
+        return False
+    bucket = bucket or settings.SUPABASE_BUCKET
+    url = f"{settings.SUPABASE_URL}/storage/v1/object/{bucket}/{quote(ruta)}"
+    try:
+        respuesta = requests.delete(url, headers=_cabeceras(), timeout=TIEMPO_ESPERA)
+    except requests.RequestException:
+        logger.warning("error_eliminacion", extra={"detalle": ruta})
+        return False
+    return respuesta.status_code < 300 or respuesta.status_code == 404

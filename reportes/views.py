@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from panel.bitacora import registrar
@@ -127,3 +128,29 @@ def descargar_adjunto(request, pk):
         return redirect("reportes:atender", reporte.pk)
     registrar("DESCARGAR_ADJUNTO", objeto=f"Reporte #{reporte.pk}", request=request)
     return redirect(url)
+
+
+@admin_requerido
+def reporte_eliminar(request, pk):
+    """Elimina un reporte y su adjunto en Supabase Storage, previa confirmación."""
+    reporte = get_object_or_404(ReporteSospechoso.objects.select_related("reportado_por"), pk=pk)
+    if request.method == "POST":
+        if reporte.adjunto_url:
+            almacenamiento.eliminar(reporte.adjunto_url)
+        descripcion = f"Reporte #{reporte.pk}: {reporte.asunto}"[:200]
+        detalle = {"reportado_por": reporte.reportado_por.email, "estado": reporte.estado}
+        reporte.delete()
+        registrar("ELIMINAR_REPORTE", objeto=descripcion, detalle=detalle, request=request)
+        messages.success(request, "Reporte eliminado.")
+        return redirect("reportes:bandeja")
+    consecuencias = ["El archivo adjunto en el almacenamiento"] if reporte.adjunto_url else []
+    return render(
+        request,
+        "comun/confirmar_eliminar.html",
+        {
+            "tipo": "reporte",
+            "objeto": f"#{reporte.pk} «{reporte.asunto}» ({reporte.reportado_por.email})",
+            "consecuencias": consecuencias,
+            "cancelar_url": reverse("reportes:atender", args=[reporte.pk]),
+        },
+    )

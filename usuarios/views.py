@@ -9,6 +9,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
@@ -241,3 +242,54 @@ def departamento_eliminar(request, pk):
         registrar("ELIMINAR_DEPARTAMENTO", objeto=nombre, request=request)
         messages.success(request, f"Departamento «{nombre}» eliminado.")
     return redirect("usuarios:departamentos_lista")
+
+
+@admin_requerido
+def usuario_detalle(request, pk):
+    """Consulta de un usuario: datos, cursos asignados, reportes y actividad reciente."""
+    usuario = get_object_or_404(Usuario.objects.select_related("departamento"), pk=pk)
+    return render(
+        request,
+        "usuarios/usuario_detalle.html",
+        {
+            "objeto": usuario,
+            "asignaciones": usuario.asignaciones.select_related("curso"),
+            "reportes": usuario.reportes.all()[:10],
+            "acciones": usuario.acciones_bitacora.all()[:10],
+        },
+    )
+
+
+@admin_requerido
+def usuario_eliminar(request, pk):
+    """Elimina un usuario previa confirmación. Un Administrador no puede eliminarse a sí mismo."""
+    usuario = get_object_or_404(Usuario, pk=pk)
+    if usuario.pk == request.user.pk:
+        messages.error(request, "No puede eliminar su propia cuenta.")
+        return redirect("usuarios:usuarios_lista")
+    if request.method == "POST":
+        email = usuario.email
+        detalle = {
+            "rol": usuario.rol,
+            "asignaciones": usuario.asignaciones.count(),
+            "reportes": usuario.reportes.count(),
+        }
+        usuario.delete()
+        registrar("ELIMINAR_USUARIO", objeto=email, detalle=detalle, request=request)
+        messages.success(request, f"Usuario {email} eliminado.")
+        return redirect("usuarios:usuarios_lista")
+    consecuencias = [
+        f"{usuario.asignaciones.count()} asignación(es) de cursos con su avance",
+        f"{usuario.intentos.count()} intento(s) de evaluación",
+        f"{usuario.reportes.count()} reporte(s) de correos sospechosos",
+    ]
+    return render(
+        request,
+        "comun/confirmar_eliminar.html",
+        {
+            "tipo": "usuario",
+            "objeto": f"{usuario.nombre_completo} <{usuario.email}>",
+            "consecuencias": consecuencias,
+            "cancelar_url": reverse("usuarios:usuarios_lista"),
+        },
+    )

@@ -4,7 +4,10 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from capacitacion import demo as demo_capacitacion
+from capacitacion import demo_extra as demo_capacitacion_extra
+from panel.bitacora import registrar
 from reportes import demo as demo_reportes
+from simulaciones import demo as demo_simulaciones
 from usuarios.models import Departamento, Usuario
 
 DEPARTAMENTOS = [
@@ -45,9 +48,12 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **opciones):
         clave = opciones["password"]
-        deptos = {
-            nombre: Departamento.objects.get_or_create(nombre=nombre)[0] for nombre in DEPARTAMENTOS
-        }
+        origen = {"origen": "seed_demo"}
+        deptos = {}
+        for nombre in DEPARTAMENTOS:
+            deptos[nombre], nuevo = Departamento.objects.get_or_create(nombre=nombre)
+            if nuevo:
+                registrar("CREAR_DEPARTAMENTO", objeto=nombre, detalle=origen)
 
         cuentas = [
             ("admin.demo", "Administrador Demo", "Soporte Técnico y Sistemas", Usuario.Rol.ADMIN),
@@ -66,6 +72,7 @@ class Command(BaseCommand):
                     departamento=deptos[depto],
                     rol=rol,
                 )
+                registrar("CREAR_USUARIO", objeto=email, detalle={**origen, "rol": rol})
                 creados += 1
 
         admin = Usuario.objects.get(email="admin.demo@curex.net.ve")
@@ -73,7 +80,17 @@ class Command(BaseCommand):
             admin, Usuario.objects.filter(rol=Usuario.Rol.COLABORADOR)
         )
 
+        demo_capacitacion_extra.cargar(admin)
         reportes = demo_reportes.cargar(admin)
+        campanas = demo_simulaciones.cargar(admin)
+        if creados or asignaciones or reportes or campanas:
+            registrar(
+                "CARGA_DATOS_DEMO",
+                usuario=admin,
+                objeto="seed_demo",
+                detalle={"usuarios": creados, "asignaciones": asignaciones,
+                         "reportes": reportes, "campanas": campanas},
+            )
 
         mensaje = (
             f"Datos de demostración listos ({creados} usuarios, {asignaciones} asignaciones "

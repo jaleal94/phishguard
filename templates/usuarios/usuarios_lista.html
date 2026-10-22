@@ -42,7 +42,7 @@
       <tbody>
       {% for u in pagina %}
         <tr>
-          <td>{{ u.nombre_completo }}</td>
+          <td><a href="{% url 'usuarios:usuario_detalle' u.pk %}">{{ u.nombre_completo }}</a></td>
           <td class="text-break">{{ u.email }}</td>
           <td><span class="badge {% if u.es_admin %}text-bg-dark{% else %}text-bg-secondary{% endif %}">{{ u.get_rol_display }}</span></td>
           <td>{{ u.departamento|default:"—" }}</td>
@@ -55,7 +55,9 @@
             {% if u.esta_bloqueado %}
             <form method="post" action="{% url 'usuarios:usuario_desbloquear' u.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-unlock" aria-hidden="true"></i> Desbloquear</button></form>
             {% endif %}
+            <a class="btn btn-sm btn-outline-secondary" href="{% url 'usuarios:usuario_detalle' u.pk %}" aria-label="Consultar {{ u.nombre_completo }}"><i class="bi bi-eye" aria-hidden="true"></i></a>
             <a class="btn btn-sm btn-outline-primary" href="{% url 'usuarios:usuario_editar' u.pk %}" aria-label="Editar {{ u.nombre_completo }}"><i class="bi bi-pencil" aria-hidden="true"></i> Editar</a>
+            {% if u.pk != user.pk %}<a class="btn btn-sm btn-outline-danger" href="{% url 'usuarios:usuario_eliminar' u.pk %}" aria-label="Eliminar {{ u.nombre_completo }}"><i class="bi bi-trash" aria-hidden="true"></i></a>{% endif %}
           </td>
         </tr>
       {% empty %}
