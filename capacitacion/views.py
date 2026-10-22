@@ -489,3 +489,64 @@ def certificado(request, pk):
             "descripcion": f"Descarga en PDF del certificado del curso «{curso.titulo}».",
         },
     )
+
+
+# --- Eliminación (Administrador) -----------------------------------------------------
+
+
+@admin_requerido
+def curso_eliminar(request, pk):
+    """Elimina un curso con sus lecciones, evaluación y asignaciones, previa confirmación."""
+    curso = get_object_or_404(Curso, pk=pk)
+    if request.method == "POST":
+        titulo = curso.titulo
+        detalle = {
+            "lecciones": curso.lecciones.count(),
+            "asignaciones": curso.asignaciones.count(),
+        }
+        curso.delete()
+        registrar("ELIMINAR_CURSO", objeto=titulo, detalle=detalle, request=request)
+        messages.success(request, f"Curso «{titulo}» eliminado.")
+        return redirect("capacitacion:cursos_admin")
+    evaluacion = Evaluacion.objects.filter(curso=curso).first()
+    consecuencias = [
+        f"{curso.lecciones.count()} lección(es)",
+        f"{evaluacion.preguntas.count() if evaluacion else 0} pregunta(s) de evaluación "
+        f"y {evaluacion.intentos.count() if evaluacion else 0} intento(s)",
+        f"{curso.asignaciones.count()} asignación(es) a usuarios con su avance",
+    ]
+    return render(
+        request,
+        "comun/confirmar_eliminar.html",
+        {
+            "tipo": "curso",
+            "objeto": curso.titulo,
+            "consecuencias": consecuencias,
+            "cancelar_url": reverse("capacitacion:curso_detalle_admin", args=[curso.pk]),
+        },
+    )
+
+
+@admin_requerido
+def asignacion_eliminar(request, pk):
+    """Quita una asignación de curso a un usuario (y su avance), previa confirmación."""
+    asignacion = get_object_or_404(
+        Asignacion.objects.select_related("curso", "usuario"), pk=pk
+    )
+    volver = reverse("capacitacion:curso_detalle_admin", args=[asignacion.curso_id])
+    if request.method == "POST":
+        descripcion = f"{asignacion.curso.titulo} → {asignacion.usuario.email}"
+        asignacion.delete()
+        registrar("ELIMINAR_ASIGNACION", objeto=descripcion, request=request)
+        messages.success(request, "Asignación eliminada.")
+        return redirect(volver)
+    return render(
+        request,
+        "comun/confirmar_eliminar.html",
+        {
+            "tipo": "asignación",
+            "objeto": f"«{asignacion.curso.titulo}» → {asignacion.usuario.nombre_completo}",
+            "consecuencias": [f"{asignacion.progresos.count()} lección(es) completadas"],
+            "cancelar_url": volver,
+        },
+    )

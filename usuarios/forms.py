@@ -49,10 +49,13 @@ class LoginForm(forms.Form):
 
         candidato = Usuario.objects.filter(email__iexact=email).first()
         if candidato and candidato.esta_bloqueado:
+            self._registrar_intento_fallido(email, candidato, "cuenta bloqueada")
             raise forms.ValidationError(MENSAJE_LOGIN_GENERICO, code="invalido")
 
         usuario = authenticate(self.request, username=email, password=password)
         if usuario is None:
+            motivo = "credenciales inválidas" if candidato else "correo no registrado"
+            self._registrar_intento_fallido(email, candidato, motivo)
             if candidato and candidato.is_active:
                 self._registrar_fallo(candidato)
             raise forms.ValidationError(MENSAJE_LOGIN_GENERICO, code="invalido")
@@ -63,6 +66,16 @@ class LoginForm(forms.Form):
             usuario.save(update_fields=["intentos_fallidos", "bloqueado_hasta"])
         self.usuario = usuario
         return datos
+
+    def _registrar_intento_fallido(self, email, candidato, motivo):
+        """Deja constancia en la bitácora de cada intento fallido de inicio de sesión."""
+        registrar(
+            "INICIO_SESION_FALLIDO",
+            usuario=candidato,
+            objeto=email[:200],
+            detalle={"motivo": motivo},
+            request=self.request,
+        )
 
     def _registrar_fallo(self, usuario):
         """Suma un intento fallido y bloquea la cuenta al llegar al máximo (RF-08)."""

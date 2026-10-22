@@ -19,18 +19,23 @@ REPORTES = [
      "Es un proveedor real; puede abrir la factura con normalidad."),
     ("rosa.morales", "Microsoft 365 <no-reply@m365-verificacion.com>",
      "Su contraseña vence hoy", ReporteSospechoso.Estado.PENDIENTE, ""),
+    ("carlos.perez", "Recursos Humanos <rrhh@curex-beneficios.com>",
+     "Actualice sus datos para el bono de fin de año", ReporteSospechoso.Estado.EN_REVISION, ""),
+    ("miguel.flores", "Soporte Técnico <soporte@curex.net.ve>",
+     "Mantenimiento programado del correo", ReporteSospechoso.Estado.FALSO_POSITIVO,
+     "Es un aviso legítimo del Departamento de Soporte Técnico y Sistemas."),
 ]
 
 
 def cargar(admin):
     """Crea los reportes de demostración una sola vez. Devuelve cuántos creó."""
-    if ReporteSospechoso.objects.exists():
-        return 0
     ahora = timezone.now()
     creados = 0
     for i, (usuario, remitente, asunto, estado, comentario) in enumerate(REPORTES):
         autor = Usuario.objects.filter(email=f"{usuario}@curex.net.ve").first()
         if autor is None:
+            continue
+        if ReporteSospechoso.objects.filter(reportado_por=autor, asunto=asunto).exists():
             continue
         atendido = estado != ReporteSospechoso.Estado.PENDIENTE
         ReporteSospechoso.objects.create(

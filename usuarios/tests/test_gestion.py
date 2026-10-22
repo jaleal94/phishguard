@@ -145,5 +145,18 @@ class SeedDemoTests(TestCase):
         self.assertTrue(admin.es_admin)
         self.assertFalse(colaborador.es_admin)
         self.assertEqual(Usuario.objects.count(), 12)
-        self.assertEqual(colaborador.asignaciones.count(), 1)
+        self.assertEqual(colaborador.asignaciones.count(), 4)
         self.assertEqual(colaborador.reportes.count(), 1)
+
+    def test_seed_demo_deja_al_menos_5_registros_en_cada_tabla_del_modelo(self):
+        """Requisito académico: script de datos con al menos 5 registros por tabla."""
+        from django.apps import apps
+
+        call_command("seed_demo", stdout=StringIO())
+        apps_propias = {"usuarios", "capacitacion", "simulaciones", "reportes", "panel"}
+        tablas_framework = {"usuarios_usuario_groups", "usuarios_usuario_user_permissions"}
+        for modelo in apps.get_models(include_auto_created=True):
+            tabla = modelo._meta.db_table
+            if modelo._meta.app_label in apps_propias and tabla not in tablas_framework:
+                with self.subTest(tabla=tabla):
+                    self.assertGreaterEqual(modelo.objects.count(), 5)

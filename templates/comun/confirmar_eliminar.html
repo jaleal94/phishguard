@@ -1,0 +1,27 @@
+{% extends "base_admin.html" %}
+{% block titulo %}Eliminar {{ tipo }}{% endblock %}
+{% block contenido %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card pg-card border-danger">
+      <div class="card-body p-4">
+        <h1 class="h4 text-danger"><i class="bi bi-trash" aria-hidden="true"></i> Eliminar {{ tipo }}</h1>
+        <p class="mb-2">¿Confirma que desea eliminar definitivamente:</p>
+        <p class="fs-5 fw-semibold">{{ objeto }}</p>
+        {% if consecuencias %}
+        <div class="alert alert-warning" role="alert">
+          <div class="fw-semibold mb-1">También se eliminarán:</div>
+          <ul class="mb-0">{% for c in consecuencias %}<li>{{ c }}</li>{% endfor %}</ul>
+        </div>
+        {% endif %}
+        <p class="small text-muted">Esta acción no se puede deshacer y quedará registrada en la bitácora.</p>
+        <form method="post" class="d-flex flex-wrap gap-2">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger"><i class="bi bi-trash" aria-hidden="true"></i> Sí, eliminar</button>
+          <a href="{{ cancelar_url }}" class="btn btn-outline-secondary">Cancelar</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
