@@ -80,3 +80,6 @@ main { flex: 1 0 auto; }
 /* Panel de indicadores */
 .pg-grafico { position: relative; height: 18rem; }
 @media (max-width: 576px) { .pg-grafico { height: 14rem; } }
+
+/* Avisos del login: encima de la tarjeta y con su mismo ancho */
+.pg-auth-main > [aria-live] { width: 100%; max-width: 880px; }
