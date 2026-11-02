@@ -5,7 +5,7 @@ import time
 from django.contrib import messages
 from django.contrib.auth import login, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.forms import PasswordChangeForm, SetPasswordForm
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
@@ -24,7 +24,7 @@ from .forms import (
     UsuarioEditarForm,
 )
 from .middleware import CLAVE_ACTIVIDAD
-from .models import Departamento, Usuario
+from .models import BLOQUEO_INDEFINIDO, Departamento, Usuario
 
 
 def login_vista(request):
@@ -153,17 +153,77 @@ def usuario_editar(request, pk):
     )
 
 
+def _volver(request, usuario):
+    """Regresa a la ficha del usuario o al listado, según desde dónde se hizo la acción."""
+    if request.POST.get("volver") == "detalle":
+        return redirect("usuarios:usuario_detalle", usuario.pk)
+    return redirect("usuarios:usuarios_lista")
+
+
+@admin_requerido
+@require_POST
+def usuario_bloquear(request, pk):
+    """Bloquea la cuenta de un usuario indefinidamente, hasta que un Administrador la desbloquee."""
+    usuario = get_object_or_404(Usuario, pk=pk)
+    if usuario.pk == request.user.pk:
+        messages.error(request, "No puede bloquear su propia cuenta.")
+        return _volver(request, usuario)
+    usuario.bloqueado_hasta = BLOQUEO_INDEFINIDO
+    usuario.intentos_fallidos = 0
+    usuario.save(update_fields=["bloqueado_hasta", "intentos_fallidos", "actualizado_en"])
+    registrar(
+        "BLOQUEAR_USUARIO", objeto=usuario.email, detalle={"tipo": "indefinido"}, request=request
+    )
+    messages.success(request, f"Se bloqueó la cuenta de {usuario.email}; no podrá iniciar sesión.")
+    return _volver(request, usuario)
+
+
 @admin_requerido
 @require_POST
 def usuario_desbloquear(request, pk):
-    """Levanta el bloqueo por intentos fallidos de un usuario."""
+    """Levanta el bloqueo de un usuario (manual o por intentos fallidos)."""
     usuario = get_object_or_404(Usuario, pk=pk)
     usuario.bloqueado_hasta = None
     usuario.intentos_fallidos = 0
-    usuario.save(update_fields=["bloqueado_hasta", "intentos_fallidos"])
+    usuario.save(update_fields=["bloqueado_hasta", "intentos_fallidos", "actualizado_en"])
     registrar("DESBLOQUEAR_USUARIO", objeto=usuario.email, request=request)
     messages.success(request, f"Se desbloqueó la cuenta de {usuario.email}.")
-    return redirect("usuarios:usuarios_lista")
+    return _volver(request, usuario)
+
+
+@admin_requerido
+@require_POST
+def usuario_cambiar_estado(request, pk):
+    """Cambia el estatus del usuario entre Activo e Inactivo."""
+    usuario = get_object_or_404(Usuario, pk=pk)
+    if usuario.pk == request.user.pk:
+        messages.error(request, "No puede cambiar el estatus de su propia cuenta.")
+        return _volver(request, usuario)
+    usuario.is_active = not usuario.is_active
+    usuario.save(update_fields=["is_active", "actualizado_en"])
+    accion = "ACTIVAR_USUARIO" if usuario.is_active else "DESACTIVAR_USUARIO"
+    registrar(accion, objeto=usuario.email, request=request)
+    estado = "activo" if usuario.is_active else "inactivo"
+    messages.success(request, f"El usuario {usuario.email} ahora está {estado}.")
+    return _volver(request, usuario)
+
+
+@admin_requerido
+def usuario_cambiar_clave(request, pk):
+    """El Administrador asigna una contraseña nueva a un usuario (aplica los validadores)."""
+    usuario = get_object_or_404(Usuario, pk=pk)
+    form = SetPasswordForm(usuario, request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        if usuario.pk == request.user.pk:
+            update_session_auth_hash(request, usuario)
+        registrar("CAMBIAR_CLAVE_USUARIO", objeto=usuario.email, request=request)
+        messages.success(
+            request,
+            f"Se cambió la contraseña de {usuario.email}. Sus sesiones abiertas se cerraron.",
+        )
+        return redirect("usuarios:usuario_detalle", usuario.pk)
+    return render(request, "usuarios/usuario_clave.html", {"form": form, "objeto": usuario})
 
 
 @admin_requerido

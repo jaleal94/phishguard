@@ -1,10 +1,15 @@
 """Modelos de usuarios y departamentos."""
 
+from datetime import UTC, datetime
+
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
+
+# Fecha que representa un bloqueo indefinido aplicado por un Administrador.
+BLOQUEO_INDEFINIDO = datetime(9999, 12, 31, tzinfo=UTC)
 
 
 class ModeloBase(models.Model):
@@ -128,3 +133,8 @@ class Usuario(AbstractUser, ModeloBase):
     def esta_bloqueado(self):
         """Indica si la cuenta está bloqueada temporalmente por intentos fallidos (RF-08)."""
         return bool(self.bloqueado_hasta and self.bloqueado_hasta > timezone.now())
+
+    @property
+    def bloqueo_por_administrador(self):
+        """Indica si la cuenta fue bloqueada manualmente (sin fecha de vencimiento)."""
+        return bool(self.bloqueado_hasta and self.bloqueado_hasta.year >= BLOQUEO_INDEFINIDO.year)

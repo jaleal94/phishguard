@@ -3,7 +3,10 @@
 {% block clase_main %}container-fluid py-4 px-lg-4{% endblock %}
 {% block contenido %}
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-  <h1 class="h3 mb-0">Usuarios</h1>
+  <div>
+    <h1 class="h3 mb-0">Usuarios</h1>
+    <p class="small text-muted mb-0">Acciones: <i class="bi bi-eye"></i> consultar · <i class="bi bi-pencil"></i> editar · <i class="bi bi-key"></i> contraseña · <i class="bi bi-lock"></i> bloquear / <i class="bi bi-unlock"></i> desbloquear · <i class="bi bi-toggle-on"></i> activar o desactivar · <i class="bi bi-trash"></i> eliminar</p>
+  </div>
   <div class="d-flex flex-wrap gap-2">
     <a class="btn btn-outline-secondary" href="{% url 'usuarios:usuarios_importar' %}"><i class="bi bi-filetype-csv" aria-hidden="true"></i> Cargar CSV <span class="badge text-bg-info">Próximamente</span></a>
     <a class="btn btn-primary" href="{% url 'usuarios:usuario_crear' %}"><i class="bi bi-person-plus" aria-hidden="true"></i> Nuevo usuario</a>
@@ -47,17 +50,22 @@
           <td><span class="badge {% if u.es_admin %}text-bg-dark{% else %}text-bg-secondary{% endif %}">{{ u.get_rol_display }}</span></td>
           <td>{{ u.departamento|default:"—" }}</td>
           <td>
-            {% if not u.is_active %}<span class="badge text-bg-light border">Inactivo</span>
-            {% elif u.esta_bloqueado %}<span class="badge text-bg-danger">Bloqueado</span>
-            {% else %}<span class="badge text-bg-success">Activo</span>{% endif %}
+            {% if u.is_active %}<span class="badge text-bg-success">Activo</span>{% else %}<span class="badge text-bg-light border">Inactivo</span>{% endif %}
+            {% if u.esta_bloqueado %}<span class="badge text-bg-danger" title="{% if u.bloqueo_por_administrador %}Bloqueado por un Administrador{% else %}Bloqueado temporalmente{% endif %}">Bloqueado</span>{% endif %}
           </td>
           <td class="text-end text-nowrap">
-            {% if u.esta_bloqueado %}
-            <form method="post" action="{% url 'usuarios:usuario_desbloquear' u.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-unlock" aria-hidden="true"></i> Desbloquear</button></form>
+            <a class="btn btn-sm btn-outline-secondary" href="{% url 'usuarios:usuario_detalle' u.pk %}" title="Consultar" aria-label="Consultar {{ u.nombre_completo }}"><i class="bi bi-eye" aria-hidden="true"></i></a>
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'usuarios:usuario_editar' u.pk %}" title="Editar datos" aria-label="Editar {{ u.nombre_completo }}"><i class="bi bi-pencil" aria-hidden="true"></i></a>
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'usuarios:usuario_cambiar_clave' u.pk %}" title="Cambiar contraseña" aria-label="Cambiar contraseña de {{ u.nombre_completo }}"><i class="bi bi-key" aria-hidden="true"></i></a>
+            {% if u.pk != user.pk %}
+              {% if u.esta_bloqueado %}
+              <form method="post" action="{% url 'usuarios:usuario_desbloquear' u.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-outline-success" type="submit" title="Desbloquear" aria-label="Desbloquear a {{ u.nombre_completo }}"><i class="bi bi-unlock" aria-hidden="true"></i></button></form>
+              {% else %}
+              <form method="post" action="{% url 'usuarios:usuario_bloquear' u.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-outline-warning" type="submit" title="Bloquear" aria-label="Bloquear a {{ u.nombre_completo }}"><i class="bi bi-lock" aria-hidden="true"></i></button></form>
+              {% endif %}
+              <form method="post" action="{% url 'usuarios:usuario_cambiar_estado' u.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-outline-secondary" type="submit" title="{% if u.is_active %}Desactivar{% else %}Activar{% endif %}" aria-label="{% if u.is_active %}Desactivar{% else %}Activar{% endif %} a {{ u.nombre_completo }}"><i class="bi {% if u.is_active %}bi-toggle-on{% else %}bi-toggle-off{% endif %}" aria-hidden="true"></i></button></form>
+              <a class="btn btn-sm btn-outline-danger" href="{% url 'usuarios:usuario_eliminar' u.pk %}" title="Eliminar" aria-label="Eliminar {{ u.nombre_completo }}"><i class="bi bi-trash" aria-hidden="true"></i></a>
             {% endif %}
-            <a class="btn btn-sm btn-outline-secondary" href="{% url 'usuarios:usuario_detalle' u.pk %}" aria-label="Consultar {{ u.nombre_completo }}"><i class="bi bi-eye" aria-hidden="true"></i></a>
-            <a class="btn btn-sm btn-outline-primary" href="{% url 'usuarios:usuario_editar' u.pk %}" aria-label="Editar {{ u.nombre_completo }}"><i class="bi bi-pencil" aria-hidden="true"></i> Editar</a>
-            {% if u.pk != user.pk %}<a class="btn btn-sm btn-outline-danger" href="{% url 'usuarios:usuario_eliminar' u.pk %}" aria-label="Eliminar {{ u.nombre_completo }}"><i class="bi bi-trash" aria-hidden="true"></i></a>{% endif %}
           </td>
         </tr>
       {% empty %}
