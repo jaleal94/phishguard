@@ -12,15 +12,23 @@ CLAVE_ACTIVIDAD = "ultima_actividad"
 # Para no escribir la sesión en cada petición, solo se actualiza cada minuto.
 INTERVALO_ACTUALIZACION = 60
 MENSAJE_INACTIVIDAD = "Su sesión se cerró por inactividad. Inicie sesión de nuevo."
+MENSAJE_BLOQUEO = (
+    "Su cuenta fue bloqueada. Comuníquese con el Departamento de Soporte Técnico y Sistemas."
+)
 
 
 class InactividadMiddleware:
-    """Cierra la sesión si pasaron más de INACTIVIDAD_SEGUNDOS desde la última petición."""
+    """Cierra la sesión de usuarios bloqueados y tras INACTIVIDAD_SEGUNDOS sin actividad (RF-07)."""
 
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
+        if request.user.is_authenticated and request.user.esta_bloqueado:
+            # Un usuario bloqueado por el Administrador pierde de inmediato su sesión activa.
+            logout(request)
+            messages.error(request, MENSAJE_BLOQUEO)
+            return redirect(resolve_url(settings.LOGIN_URL))
         if request.user.is_authenticated:
             ahora = int(time.time())
             ultima = request.session.get(CLAVE_ACTIVIDAD)

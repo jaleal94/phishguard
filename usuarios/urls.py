@@ -52,6 +52,19 @@ urlpatterns = [
         "admin-panel/usuarios/<int:pk>/eliminar/", views.usuario_eliminar, name="usuario_eliminar"
     ),
     path(
+        "admin-panel/usuarios/<int:pk>/bloquear/", views.usuario_bloquear, name="usuario_bloquear"
+    ),
+    path(
+        "admin-panel/usuarios/<int:pk>/estado/",
+        views.usuario_cambiar_estado,
+        name="usuario_cambiar_estado",
+    ),
+    path(
+        "admin-panel/usuarios/<int:pk>/clave/",
+        views.usuario_cambiar_clave,
+        name="usuario_cambiar_clave",
+    ),
+    path(
         "admin-panel/usuarios/<int:pk>/desbloquear/",
         views.usuario_desbloquear,
         name="usuario_desbloquear",
